@@ -1,0 +1,279 @@
+"use client";
+import "./page.css";
+import MainStructure from "../components/MainStructure";
+import ContentTitle from "../components/ContentTitle";
+import {useRef, useState, useContext } from "react";
+import DocumentsCard from "../components/DocumentsCard";
+import { useRouter } from "next/navigation";
+import LogInInputs from "../components/LogInInputs";
+import { LanguageContext } from "../components/LanguageContext";
+import Swal from "sweetalert2";
+
+type UploadedDocs = {
+  [key: string]: File[];
+};
+const NewShipment = () => {
+  const { t } = useContext(LanguageContext);
+  const [allDocuments, setAllDocuments] = useState<UploadedDocs>({
+    "Commercial Invoice": [],
+    "Certificate of Origin": [],
+    "Airway Bill": [],
+    "Packing List": [],
+    "Proforma Invoice": [],
+  });
+
+  const [activeType, setActiveType] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleUploadTrigger = (docType: string) => {
+    setActiveType(docType);
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0 && activeType) {
+      const selectedFile = files[0];
+
+      setAllDocuments(prev => ({
+        ...prev,
+        [activeType]: [...prev[activeType], selectedFile]
+      }));
+
+      e.target.value = "";
+    }
+  };
+
+  const cardData = [
+    { name: "Commercial Invoice", desc: "Standard commercial invoice", icon: "/icons/CommercialInvoice.png" },
+    { name: "Certificate of Origin", desc: "Proof of goods origin", icon: "/icons/CertificateOfOrigin.png" },
+    { name: "Airway Bill", desc: "Air freight document", icon: "/icons/AirwayBill.png" },
+    { name: "Packing List", desc: "Detailed packing info", icon: "/icons/PackingList.png" },
+    { name: "Proforma Invoice", desc: "Preliminary bill of sale", icon: "/icons/ProformaInvoice.png" },
+  ];
+
+  const removeFile = (docName: string, fileIndex: number) => {
+  setAllDocuments(prev => ({
+    ...prev,
+    [docName]: prev[docName].filter((_, index) => index !== fileIndex)
+  }));
+};
+const shipmentNameRef = useRef<HTMLInputElement>(null);
+const shipmentReferenceNumberRef = useRef<HTMLInputElement>(null);
+const shipmentStatusRef = useRef<HTMLDivElement>(null);
+const [shipmentData, setShipmentData] = useState({
+  shipmentName: "",
+  shipmentReferenceNumber: "",
+  shipmentStatus: ""
+});
+const handleDataChange = () => {  
+  setShipmentData({
+    shipmentName: shipmentNameRef.current ? shipmentNameRef.current.value : "",
+    shipmentReferenceNumber: shipmentReferenceNumberRef.current ? shipmentReferenceNumberRef.current.value : "",
+    shipmentStatus: shipmentStatusRef.current ? (shipmentStatusRef.current.querySelector('input[name="shipmentStatusGroup"]:checked') as HTMLInputElement)?.value || "In Progress" : "In Progress",
+  });
+};
+const [createShipmentPressed, setCreateShipmentPressed] = useState(false);
+const router = useRouter();
+const handleSubmit1 = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const totalFiles = Object.values(allDocuments).flat().length;
+    if (totalFiles === 0) {
+        Swal.fire({ text: t("Please upload at least one document before creating the shipment."), icon: "warning" });
+        return;
+    }else{setCreateShipmentPressed(!createShipmentPressed);}
+       
+};
+const handleSubmit2 = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!shipmentData.shipmentName || !shipmentData.shipmentReferenceNumber || !shipmentData.shipmentStatus) {
+        Swal.fire({ text: t("Please fill in all shipment details before submitting."), icon: "warning" });
+        return;
+    }
+
+    try {
+        const response = await fetch(`http://localhost:8080/jamrik/shipments/newShipment`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                shipmentName: shipmentData.shipmentName,
+                referenceNumber: shipmentData.shipmentReferenceNumber,
+                status: shipmentData.shipmentStatus,
+            })
+        });
+
+        if (response.ok) {
+            await response.json();            
+            
+            const success = await handleFileUploadsForCreatingShipment(allDocuments, shipmentData.shipmentReferenceNumber);
+            
+            if (success) {
+                Swal.fire({ text: t("Shipment with the documents created successfully!"), icon: "success" }).then(() => {
+                    router.push("/Shipments");
+                });
+            } else {
+                Swal.fire({ text: t("Shipment created, but documents failed to upload."), icon: "warning" }).then(() => {
+                    router.push("/Shipments");
+                });
+            }
+        } else {
+            const errorMsg = await response.text();
+            Swal.fire({ text: t("Error: ") + errorMsg, icon: "error" });
+        }
+    } catch (error) {
+        console.error("Connection error:", error);
+        Swal.fire({ text: t("Could not connect to the backend server."), icon: "error" });
+    }
+};
+
+const handleFileUploadsForCreatingShipment = async (documents: UploadedDocs, shipmentId: string) => {
+    try {
+        const url = `http://localhost:8080/jamrik/documents/upload/${encodeURIComponent(shipmentId)}`;
+
+        const formData = new FormData();
+
+        Object.entries(documents).forEach(([docType, fileArray]) => {
+            // Ensure the value is an array and contains files
+            if (Array.isArray(fileArray)) {
+                fileArray.forEach((file) => {
+                    // Option A: Send files with their document type as the form key
+                    formData.append(docType, file);
+                    
+                    // Option B: If your backend expects a single key like "files", 
+                    // you can send the type alongside it by appending a text field, or keep Option A.
+                    // formData.append("files", file);
+                });
+            }
+        });
+
+        // Send the request without setting manual Content-Type headers
+        const response = await fetch(url, {
+            method: "POST",
+            body: formData, // Browser handles boundaries automatically
+        });
+
+        if (!response.ok) {
+            const error = await response.text();
+            console.error("Upload failed:", error);
+            return false;
+        }
+        
+        return true;
+    } catch (error) {
+        console.error("Connection error:", error);
+        return false;
+    }
+};
+    return (
+      <MainStructure>
+        <div className="NewShipmentContainer">
+        <ContentTitle title={t("Create New Shipment")} subTitle={t("Set origin and destination, then upload required documents")} />
+        
+        <div className="documentUploadProcess">
+            <div className="documentUploadProcessInfo">
+                    <p>{t("Documents Uploaded")}</p>
+            </div>
+
+            <hr/>
+
+         <div className="uploadedFilesList">
+          {Object.entries(allDocuments).map(([docName, files]) => 
+          files.map((file, index) => (
+            <div key={`${docName}-${index}`} className="uploadedFileCard">
+                <div style={{display: "flex", flexDirection: "column", alignItems: "flex-start",  padding: "8px 0px 8px 8px"}}>
+              <span className="fileNameText">{t(docName)}:</span><span> {file.name}</span>
+                </div>
+              <button 
+                className="removeFileBtn" 
+                onClick={() => !createShipmentPressed ?removeFile(docName, index) : null }
+              >
+                ✖️
+              </button>
+            </div>
+        ))
+        )}
+      </div>
+    </div>
+
+        <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        accept=".pdf,.doc,.docx,.xls,.xlsx"
+        style={{ display: 'none' }}
+      />
+
+
+        <div className="documentUploadContainer">
+            <div className="documentUploadInfo">
+                <p style={{ color:"#171717",fontSize:"20px" , fontWeight: "400" }}>{t("Select Document Type")}</p>
+                <p style={{color:"#525252" , fontSize: "16px",marginBottom: "12px", fontWeight: "300" }}>{t("Click on any document type to upload")}</p>
+            </div>
+            
+            <div className="documentsCardsContainer">
+        {cardData.map((doc) => (
+          <DocumentsCard
+            DocumentIcon={doc.icon}
+            key={doc.name}
+            DocumentName={t(doc.name)}
+            DocumentDesc={t(doc.desc)}
+            fileCount={allDocuments[doc.name]?.length || 0}
+            clickFun={() => !createShipmentPressed ? handleUploadTrigger(doc.name) : null}
+          />
+        ))}
+      </div>
+
+
+       <button 
+     className="createShipmentBtn" 
+     onClick={(e) => !createShipmentPressed ? handleSubmit1(e) : null}>
+     {t("Create Shipment")}
+      </button>
+
+      <div className="createShipmentPopUp" style={{display:`${createShipmentPressed ? "flex" : "none"}`}}>
+        <div>
+        <LogInInputs onValueChange={handleDataChange} ref={shipmentNameRef} label={t("Shipment Name")} iconSrc="/icons/mailicon.png" iconName="mail icon" inputType="text" inputName="shipmentName" placeholder={t("Example Shipment")} />
+        <LogInInputs onValueChange={handleDataChange} ref={shipmentReferenceNumberRef} label={t("Shipment Reference Number")} iconSrc="/icons/mailicon.png" iconName="mail icon" inputType="text" inputName="shipmentReferenceNumber" placeholder="ORGD9678383" />
+        </div>
+
+        <div className="shipmentStatusOptions" ref={shipmentStatusRef} onChange={handleDataChange} style={{display: "flex",marginTop: "20px",gap: "24px", fontSize: "18px"}}>
+        <div style={{display: "flex",gap:"8px"}}>
+        <label htmlFor="inProgressStatus" className="shipmentDataOption" >{t("In Progress")}</label>
+        <input type="radio" id="inProgressStatus" name="shipmentStatusGroup" value="In Progress" defaultChecked />
+        </div>
+
+         <div style={{display: "flex",gap:"8px"}}>
+        <label htmlFor="doneStatus" className="shipmentDataOption" >{t("Done")}</label>
+        <input type="radio" id="doneStatus" name="shipmentStatusGroup" value="Done" />
+        </div>
+      </div>
+      <div style={{marginTop:"20px",display: "flex", gap: "12px",flexDirection: "row", justifyContent: "flex-end"}}>
+      <button 
+      style={{padding:"8px 16px",backgroundColor:"#ad0000"}}
+     className="createShipmentBtn"
+     onClick={() => setCreateShipmentPressed(false)}>
+     {t("Cancel Shipment")}
+      </button>
+      <button 
+      style={{padding:"8px 16px",backgroundColor:"green"}}
+     className="createShipmentBtn"
+     onClick={handleSubmit2}>
+     {t("Create Shipment")}
+      </button>
+      </div>
+
+      </div>
+
+
+   
+     </div>
+        </div>
+        </MainStructure>
+    );
+}
+export default NewShipment;

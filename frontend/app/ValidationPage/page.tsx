@@ -1,0 +1,193 @@
+"use client";
+import MainStructure from "../components/MainStructure";
+import ContentTitle from "../components/ContentTitle";
+import { useEffect, useRef, useState, useContext } from "react";
+import Image from "next/image";
+import { LanguageContext } from "../components/LanguageContext";
+import "./page.css";
+import Swal from "sweetalert2";
+
+const ValidationPage = () => {
+    const { t } = useContext(LanguageContext);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [filesData, setFilesData] = useState<{key: string; docType: string; file: File | null}[]>([
+        {
+            key : "1",
+            docType: "",
+            file: null
+        },
+        {
+            key : "2",
+            docType: "",
+            file: null
+        }
+    ]);
+    const [activeIndex, setActiveIndex] = useState<number | null>(null);
+
+    const docTypes = [
+        { value: "", label: t("Select Document Type") },
+        { value: "airwayBill", label: t("Airway Bill") },
+        { value: "invoice", label: t("Commercial Invoice") },
+        { value: "packingList", label: t("Packing List") },
+        { value: "certificateOfOrigin", label: t("Certificate of Origin") },
+        { value: "proformaInvoice", label: t("Proforma Invoice") },
+    ];
+
+    const handleUploadTrigger = (index: number) => {
+        setActiveIndex(index);
+        if (fileInputRef.current) {
+            fileInputRef.current.click();
+        }
+    };
+
+    const handleTypeChange = (index: number, newType: string) => {
+        setFilesData(prev => {
+            const newFilesData = [...prev];
+            newFilesData[index] = {
+                ...newFilesData[index],
+                docType: newType
+            };
+            return newFilesData;
+        });
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {  
+    const files = e.target.files;
+    if (files && files.length > 0 && activeIndex !== null) {
+        const selectedFile = files[0];
+        setFilesData(prev => {
+            const newFilesData = [...prev];
+            newFilesData[activeIndex] = {
+                ...newFilesData[activeIndex],
+                file: selectedFile
+            };
+            return newFilesData;
+        });
+
+        e.target.value = ""; 
+        setActiveIndex(null); 
+}};
+ const [displayAiResult, setDisplayAiResult] = useState(false);
+ const [aiValidationResult, setAiValidationResult] = useState<string>("");
+const handleValidate = async () => {
+        // 1. Validation Check
+        if (filesData[0].file === null || filesData[1].file === null || filesData[0].docType === "" || filesData[1].docType === "") {
+            Swal.fire({ text: t("Please upload both documents and select their types."), icon: "warning" });
+            return;
+        }
+
+        // 2. Clear previous results and show a clean processing spinner
+        setDisplayAiResult(false);
+        setAiValidationResult("");
+        
+        Swal.fire({
+            title: t("Processing Manifests"),
+            text: t("AI is extracting text and validating consistency metrics..."),
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        // 3. Assemble Multipart Payload
+        const formData = new FormData();
+        // Appending to the same key creates a clean Indexed Collection List for Java
+        formData.append("files", filesData[0].file);
+        formData.append("files", filesData[1].file);
+        
+        // // Optional: Sending types if your backend logic expects cross-referencing values
+        // formData.append("types", filesData[0].docType);
+        // formData.append("types", filesData[1].docType);
+
+        try {
+            // 4. API Request to Spring Boot Endpoint
+            const response = await fetch("http://localhost:8080/jamrik/codes/validate", {
+                method: "POST",
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error("Validation engine service returned an error status.");
+            }
+
+            // Expecting either a flat string response or a JSON object containing a result field
+            const data = await response.json();
+            
+            // Close the processing spinner
+            Swal.close();
+
+            // 5. Update Local State UI
+            // Adapt 'data.result' based on your precise backend return layout structure
+            setAiValidationResult(data.result || JSON.stringify(data));
+            setDisplayAiResult(true);
+
+            Swal.fire({ 
+                text: t("Documents processed successfully! Review AI assessment below."), 
+                icon: "success" 
+            });
+
+        } catch (error) {
+            Swal.close();
+            Swal.fire({
+                title: t("Validation Failed"),
+                text: error instanceof Error ? error.message : t("Could not communicate with the engine server."),
+                icon: "error"
+            });
+        }
+    };
+   
+    return (
+        <MainStructure>
+        <div className="validationPageContainer">
+        <ContentTitle title={t("Validation Page")} subTitle={t("Upload 2 Documents for validation")} />
+
+            <div className="validationPageFileUploadContainer">                
+                {filesData.map((fileObj, index) => (
+                    <div key={fileObj.key}>
+                        <select 
+                            value={fileObj.docType} 
+                            onChange={(e) => handleTypeChange(index, e.target.value)}
+                            className="validationPageSelect">
+                            {docTypes.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                        </select>
+                        <div 
+                            className="validationPageFileInputContainer" 
+                            onClick={() => handleUploadTrigger(index)} 
+                         >
+
+                        {fileObj.file ? (
+                           <span className="fileNameLabel">{fileObj.file.name}</span>
+                            ) : (
+                           <Image src="/icons/plus.png" alt="Upload Icon" width={32} height={32} />
+                                  )}
+                        </div>
+                    </div>
+                ))}
+
+            </div>
+
+        <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        accept=".pdf,.doc,.docx,.xls,.xlsx"
+        style={{ display: 'none' }}
+      />
+
+      <button className="validationPageValidateButton" onClick={handleValidate}>
+        {t("Validate")}
+      </button>
+      {displayAiResult && (
+        <div className="AiValidationResultContainer">
+          <p className="validationResultTitle">{t("AI Validation Result")}</p>
+          {aiValidationResult.split("\n").map((line, index) => (
+            <p key={index} className="validationResultLine">{line}</p>
+          ))}
+        </div>
+      )}
+
+        </div>
+        </MainStructure>
+    );
+}
+export default ValidationPage;

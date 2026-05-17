@@ -1,0 +1,68 @@
+.ShipmentsContainer{
+    height: 100vh;
+}
+.allShipmentsTableContainer{
+    background-color: white;
+    border: 1px solid #D4D4D4;
+    border-radius: 15px;
+    padding: 12px 12px;
+}
+.allShipmentsTittle{
+    font-size: 20px;
+    font-weight: 500;
+    color: #171717;
+    margin-bottom: 8px;
+}
+.allShipmentsNumber{
+    font-size: 16px;
+    color: #525252;
+    margin-bottom: 8px;
+}
+.selectedShipmentContainer{
+    background-color: white;
+    border: 1px solid #D4D4D4;
+    border-radius: 15px;
+    padding: 0px 12px 12px 12px;
+    min-width: 68.1%;
+   flex: 1; 
+   display: flex;
+   flex-direction: column;
+}
+.selectedShipmentUploadedDocumentsContainer{
+    background-color: #D9D9D9;
+    border: 1px solid #D4D4D4;
+    border-radius: 15px;
+    padding: 12px;
+    margin: 12px 0px;
+    height: 100%;
+}
+.ShipmentBtnsContainer{
+    display: flex;
+    gap: 12px;
+    margin-top: 12px;
+    flex-direction: row;
+    justify-content: flex-end;
+}
+.analyzeShipmentDocumentsButton, .generateFormButton{
+    background-color: #807F88;
+    color: white;
+    font-size: 16px;
+    padding: 10px 20px;
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    margin: 20px 0px;
+    width: 100%;
+}
+.analyzeShipmentDocumentsButton:hover, .generateFormButton:hover{
+    background-color: #193CB8;
+}
+.aiResultsTitle{
+    font-size: 18px;
+    font-weight: 500;
+    color: #171717;
+    margin-bottom: 8px;
+}
+.aiResultsContent{
+    font-size: 14px;
+}
