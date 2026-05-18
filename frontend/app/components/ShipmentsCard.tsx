@@ -11,7 +11,7 @@ type ShipmentsCardProps = {
 const ShipmentsCard = ({shipmentName, referenceNumber,status, handleDeleteShipment,isSelected,handleClick }: ShipmentsCardProps & { handleClick: (id: string) => void }) => {
     const handleStatusChange = async (newStatus: string) => {
     try {
-        const url = `http://localhost:8080/jamrik/changeStatus?id=${referenceNumber}&status=${newStatus}`;
+        const url = `http://localhost:8080/jamrik/shipments/changeStatus?id=${referenceNumber}&status=${newStatus}`;
         
         const response = await fetch(url, {
             method: "POST", 

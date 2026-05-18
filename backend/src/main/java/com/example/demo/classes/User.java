@@ -13,9 +13,6 @@ import lombok.NoArgsConstructor;
 public class User {
     //it is the id in the db table
     @Id
-    //randomly generated value starting at 1
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
-    private Long userId;
     @Column(nullable=false,unique=true)
     private String userName;
     @Column(nullable=false,unique=true)
@@ -25,8 +22,7 @@ public class User {
     private String role;
     private int avatar;
 
-    public User(Long userId, String UserName, String Email, String Password, String Role){
-         this.userId=userId;
+    public User( String UserName, String Email, String Password, String Role){
          userName=UserName;
          email=Email;
          password=Password;

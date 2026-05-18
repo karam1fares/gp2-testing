@@ -13,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 public class Shipment {
     @Id
-    private String shipmentReferenceNumber;
+    private String referenceNumber;
     @Column(nullable=false,unique=true)
     private String shipmentName;
     @Column(nullable=false)
@@ -24,12 +24,12 @@ public class Shipment {
     @OneToMany(mappedBy="shipment", cascade=CascadeType.ALL, orphanRemoval=true)
     private List<Document> documents=new ArrayList<>();
     @ManyToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name="user_id")
+    @JoinColumn(name = "user_username", referencedColumnName = "userName")
     private User owner;
 
-    public Shipment(String ShipmentReferenceNumber, String ShipmentName,
+    public Shipment(String referenceNumber, String ShipmentName,
                     String Status, LocalDate CreatedDate, User owner) {
-        this.shipmentReferenceNumber=ShipmentReferenceNumber;
+        this.referenceNumber=referenceNumber;
         this.shipmentName=ShipmentName;
         this.status=Status;
         this.createdDate=CreatedDate;

@@ -8,7 +8,6 @@ import java.util.Optional;
 
 @Repository
 public interface ShipmentRepository extends JpaRepository<Shipment,String> {
-    Optional<Shipment> findByShipmentId(String ShipmentReferenceNumber);
-
+    Optional<Shipment> findByReferenceNumber(String referenceNumber);
 
 }

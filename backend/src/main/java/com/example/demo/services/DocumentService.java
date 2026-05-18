@@ -36,7 +36,7 @@ public class DocumentService {
                                             List<MultipartFile> files,
                                             List<DocumentMetadata> metadata){
         //checking whether the requested shipment is within the db
-        Shipment shipment=shipmentRepo.findByShipmentId(referenceNumber)
+        Shipment shipment=shipmentRepo.findByReferenceNumber(referenceNumber)
                 .orElseThrow(()-> new RuntimeException("Shipment not found"));
         //new empty list to store extracted text from all docs
         List<String> allExtractedTexts=new ArrayList<>();
@@ -78,7 +78,7 @@ public class DocumentService {
          }
      }
      public void deleteDocument(String referenceNumber,String documentName){
-        Document document=documentRepo.findByDocumentId(referenceNumber,documentName)
+        Document document=documentRepo.findByDocumentName(referenceNumber,documentName)
                 .orElseThrow(()->new RuntimeException("Document not found"));
         Shipment shipment=document.getShipment();
         if(shipment!=null)
@@ -86,12 +86,12 @@ public class DocumentService {
         documentRepo.delete(document);
      }
      public Optional<Document> search(String referenceNumber, String documentName){
-        return documentRepo.findByDocumentId(referenceNumber,documentName);
+        return documentRepo.findByDocumentName(referenceNumber,documentName);
      }
      public ResponseEntity<?> uploadOneDoc(String referenceNumber,MultipartFile file,
                                            String fileName, String fileType){
          //checking whether the requested shipment is within the db
-         Shipment shipment=shipmentRepo.findByShipmentId(referenceNumber)
+         Shipment shipment=shipmentRepo.findByReferenceNumber(referenceNumber)
                  .orElseThrow(()-> new RuntimeException("Shipment not found"));
          try {
              //calling the method responsible for extracting text

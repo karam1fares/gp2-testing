@@ -16,7 +16,7 @@ public class Document {
     @Column(nullable=false,unique=true)
     private String documentUrl;
     @ManyToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name="shipment_id")
+    @JoinColumn(name = "shipment_referenceNumber", referencedColumnName = "referenceNumber")
     @JsonIgnore
     private Shipment shipment;
     private String content;

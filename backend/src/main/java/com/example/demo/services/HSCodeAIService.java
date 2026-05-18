@@ -6,6 +6,7 @@ import com.example.demo.repositories.DocumentRepository;
 import com.example.demo.repositories.ShipmentRepository;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,7 +22,7 @@ public class HSCodeAIService {
     private final ShipmentRepository shipmentRepo;
     private final ShipmentService shipmentService;
 
-    public HSCodeAIService(ChatClient.Builder builder, DocumentService documentService,
+    public HSCodeAIService(ChatClient.Builder builder, @Lazy DocumentService documentService,
                            ShipmentRepository shipmentRepo,
                            ShipmentService shipmentService) {
         this.chatclient = builder.build();
@@ -57,7 +58,7 @@ public class HSCodeAIService {
     }
 
     public String analyze(String referenceNumber){
-        Shipment shipment=shipmentRepo.findByShipmentId(referenceNumber)
+        Shipment shipment=shipmentRepo.findByReferenceNumber(referenceNumber)
                 .orElseThrow(()-> new RuntimeException("Shipment not found"));
         List<Document> docs=shipmentService.searchDocs(referenceNumber);
         List<String> content=new ArrayList<>();

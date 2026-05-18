@@ -28,7 +28,7 @@ public class ShipmentService {
     }
     //check the database for the shipment first
     public boolean shipmentExists(ShipmentDTO sDTO){
-        return shipmentRepo.findByShipmentId(sDTO.referenceNumber()).isPresent();
+        return shipmentRepo.findByReferenceNumber(sDTO.referenceNumber()).isPresent();
     }
     //create a new shipment and store it in the DB, iff it doesn't exist in it
  public Shipment createNewShipment(ShipmentDTO sDTO,String userName){
@@ -40,7 +40,7 @@ public class ShipmentService {
         //assign the new shipment object the attributes from the dto received
         Shipment shipment=new Shipment();
         shipment.setShipmentName(sDTO.shipmentName());
-        shipment.setShipmentReferenceNumber(sDTO.referenceNumber());
+        shipment.setReferenceNumber(sDTO.referenceNumber());
         shipment.setCreatedDate(LocalDate.now());
         //the shipment user is the user in the current session, set attribute
         shipment.setOwner(user);
@@ -48,18 +48,18 @@ public class ShipmentService {
         return shipmentRepo.save(shipment);
     }
     public Shipment setShipmentStatus(String referenceNumber,String status){
-         Shipment shipment=shipmentRepo.findByShipmentId(referenceNumber)
+         Shipment shipment=shipmentRepo.findByReferenceNumber(referenceNumber)
                  .orElseThrow(()->new RuntimeException("Shipment not found"));
         shipment.setStatus(status);
         return shipmentRepo.save(shipment);
     }
     //search for any shipment that is in the db
     public Optional<Shipment> search(String referenceNumber){
-        return shipmentRepo.findByShipmentId(referenceNumber);
+        return shipmentRepo.findByReferenceNumber(referenceNumber);
     }
     //delete shipments using the reference number i.e, the id
     public Shipment delete(String referenceNumber) {
-        Shipment shipment = shipmentRepo.findByShipmentId(referenceNumber)
+        Shipment shipment = shipmentRepo.findByReferenceNumber(referenceNumber)
                 .orElseThrow(() -> new RuntimeException("Shipment not found"));
         shipmentRepo.delete(shipment);
         return shipment;
@@ -70,7 +70,7 @@ public class ShipmentService {
     }
     //search all docs for a givin shipment
     public List<Document> searchDocs(String referenceNumber){
-        return documentRepo.findAllDocsByShipmentReferenceNumber(referenceNumber);
+        return documentRepo.findByReferenceNumber(referenceNumber);
     }
 
 }
