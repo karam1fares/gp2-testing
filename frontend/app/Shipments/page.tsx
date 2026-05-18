@@ -247,14 +247,13 @@ const handleAnalyzeDocuments = async () => {
             throw new Error(t("The AI analysis engine encountered an unexpected error."));
         }
 
-        // 5. Read the response payload (Assuming your backend returns a JSON object with an 'analysis' field)
-        const data = await response.json();
+        // Backend returns a plain string result for analysis; read as text
+        const text = await response.text();
         
         Swal.close(); // Turn off loading overlay
 
-        // 6. Bind the string response data right into your UI state text container
-        // Fits dynamically into: {aiResultContent} inside your return template block
-        setAiResultContent(data.analysis || JSON.stringify(data));
+        // Bind the string response data into the UI state
+        setAiResultContent(text);
 
 
     } catch (error) {

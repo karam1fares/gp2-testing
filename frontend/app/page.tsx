@@ -1,4 +1,4 @@
-import DashBoard from "./DashBoard/page";
+import DashBoard from "./dashboard/page";
 export default function Home() {
   return (
     <div className="page">

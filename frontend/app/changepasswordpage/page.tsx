@@ -62,7 +62,7 @@ const ChangePasswordPage = () => {
                 throw new Error("Failed to change password");
             }
             Swal.fire({ text: "Password changed successfully.", icon: "success" }).then(() => {
-                router.push("/DashBoard");
+                router.push("/dashboard");
             });
         } catch (error) {
             console.error("Error changing password:", error);
@@ -73,7 +73,7 @@ const ChangePasswordPage = () => {
     return (
         <div className="ChangePasswordPage">
         <div className="whiteBoxChangePassword">
-            <BackArrow to="/DashBoard"/>
+            <BackArrow to="/dashboard"/>
             <h1 className="subTitle">Change Password</h1>
             <LogInInputs onValueChange={handleDataChange} ref={userNameRef} label="User Name" iconSrc="/icons/usericon.png" iconName="user icon" inputType="text" inputName="userName" placeholder="Enter user name" />
             <LogInInputs onValueChange={handleDataChange} ref={oldPasswordRef} label="Old Password" iconSrc="/icons/lockicon.png" iconName="lock icon" inputType="password" inputName="oldPassword" placeholder="Enter old password" />

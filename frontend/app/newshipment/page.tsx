@@ -113,13 +113,13 @@ const handleSubmit2 = async (e: React.FormEvent) => {
             const success = await handleFileUploadsForCreatingShipment(allDocuments, shipmentData.shipmentReferenceNumber);
             
             if (success) {
-                Swal.fire({ text: t("Shipment with the documents created successfully!"), icon: "success" }).then(() => {
-                    router.push("/Shipments");
-                });
+              Swal.fire({ text: t("Shipment with the documents created successfully!"), icon: "success" }).then(() => {
+                router.push("/shipments");
+              });
             } else {
-                Swal.fire({ text: t("Shipment created, but documents failed to upload."), icon: "warning" }).then(() => {
-                    router.push("/Shipments");
-                });
+              Swal.fire({ text: t("Shipment created, but documents failed to upload."), icon: "warning" }).then(() => {
+                router.push("/shipments");
+              });
             }
         } else {
             const errorMsg = await response.text();
@@ -136,25 +136,25 @@ const handleFileUploadsForCreatingShipment = async (documents: UploadedDocs, shi
         const url = `http://localhost:8080/jamrik/documents/upload/${encodeURIComponent(shipmentId)}`;
 
         const formData = new FormData();
+        const metadata: { name: string; type: string }[] = [];
 
+        // Append each file under the single key 'files' and build metadata array
         Object.entries(documents).forEach(([docType, fileArray]) => {
-            // Ensure the value is an array and contains files
-            if (Array.isArray(fileArray)) {
-                fileArray.forEach((file) => {
-                    // Option A: Send files with their document type as the form key
-                    formData.append(docType, file);
-                    
-                    // Option B: If your backend expects a single key like "files", 
-                    // you can send the type alongside it by appending a text field, or keep Option A.
-                    // formData.append("files", file);
-                });
-            }
+          if (Array.isArray(fileArray)) {
+            fileArray.forEach((file) => {
+              formData.append("files", file);
+              metadata.push({ name: file.name, type: docType });
+            });
+          }
         });
+
+        // Attach metadata as a JSON part so Spring can bind to @RequestPart("metadata")
+        formData.append("metadata", new Blob([JSON.stringify(metadata)], { type: "application/json" }));
 
         // Send the request without setting manual Content-Type headers
         const response = await fetch(url, {
-            method: "POST",
-            body: formData, // Browser handles boundaries automatically
+          method: "POST",
+          body: formData, // Browser handles boundaries automatically
         });
 
         if (!response.ok) {

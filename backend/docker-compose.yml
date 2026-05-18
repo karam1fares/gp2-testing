@@ -28,13 +28,14 @@ services:
       - SPRING_AI_GOOGLE_AI_API_KEY=${SPRING_AI_GOOGLE_AI_API_KEY}
 
   frontend:
-   image: ahmeddyasien/jamrik_frontend
-   container_name: jamrik_frontend
-   ports:
-     - "3000:80"
-     - "80:80"
-   volumes:
-    - ../frontend/out:/usr/share/nginx/html
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: jamrik_frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - app
 
 volumes:
   postgres_data:

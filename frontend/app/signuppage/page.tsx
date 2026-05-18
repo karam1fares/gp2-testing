@@ -49,6 +49,7 @@ const SignUpPage = () => {
         return;
     }
     try {
+        console.log("Submitting registration data to backend...");
             const response = await fetch("http://localhost:8080/jamrik/register", {
                 method: "POST",
                 headers: {
@@ -63,7 +64,7 @@ const SignUpPage = () => {
                     avatar:0,
                 }),
             });
-
+            console.log("Received response from backend:", response);
             if (response.ok) {
                 const data = await response.json();
                 setUserData({
@@ -72,12 +73,15 @@ const SignUpPage = () => {
                     email: data.email,
                     avatarUrl: avatarUrl,
                 });
-                router.push("/DashBoard");
+                console.log("User context set:", { userName: data.userName, id: data.id, email: data.email, avatarUrl: avatarUrl });
+                router.push("/dashboard");
             } else {
+                console.error("Registration failed with status:", response.status);
                 const errorText = await response.text();
                 Swal.fire({ text: "Registration failed: " + errorText, icon: "error" });
             }
         } catch (error) {
+            console.error("Network error during registration:", error);
             console.error("Network error:", error);
             Swal.fire({ text: "Cannot connect to the server.", icon: "error" });
         }
@@ -130,7 +134,7 @@ const SignUpPage = () => {
               </form>
 
               <hr className="hr"/>
-              <HaveAccount leftSide="Already have an account?" rightSide="Sign in" To="/LogInPage" />
+              <HaveAccount leftSide="Already have an account?" rightSide="Sign in" To="/loginpage" />
               </div>
         </div>
     );

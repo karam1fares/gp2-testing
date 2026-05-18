@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import UserContext from "../components/UserContext";
 import { useContext } from "react";
 import LogInInputsErrorHandler from "../components/LogInInputsErrorHandler";
-import Link from "next/dist/client/link";
+import Link from "next/link";
 import Swal from "sweetalert2";
 
 const LogInPage = () => {
@@ -63,16 +63,19 @@ const LogInPage = () => {
                 },
                 body: urlEncodedData.toString(),
             });
+            console.log("Received response from backend:", response);
 
             if (response.ok) {
-                const data = await response.json();
+                // Backend's formLogin success handler currently returns a simple success message.
+                // Populate minimal user context using the submitted username so the frontend remains functional.
+                console.log("Login successful, setting user context and redirecting...");
                 setUserData({
-                    userName: data.userName,
-                    id: data.id,
-                    email: data.email,
-                    avatarUrl: data.avatarUrl,
+                    userName: currentUsername,
+                    id: "",
+                    email: "",
+                    avatarUrl: "0",
                 });
-                
+                console.log("User context set:", { userName: currentUsername, id: "", email: "", avatarUrl: "0" });
                 Swal.fire({
                     title: "Success!",
                     text: "Logged in successfully",
@@ -80,8 +83,8 @@ const LogInPage = () => {
                     timer: 1500,
                     showConfirmButton: false
                 });
-
-                router.push("/DashBoard");
+                console.log("Redirecting to dashboard...");
+                router.push("/dashboard");
             } else {
                 const errorMsg = await response.text();
                 Swal.fire({ text: errorMsg || "Invalid credentials", icon: "error" });
@@ -95,7 +98,6 @@ const LogInPage = () => {
     return (
         <div className="LogInPage">
             <LogInStructure />
-
             <div className="whiteBoxLogin">
                 <div>
                     <p className="subTitle">Welcome back</p>
@@ -136,7 +138,7 @@ const LogInPage = () => {
                     
                     <div>
                         <p className="forgotPassword">
-                            <Link href="/ChangePasswordPage" className="forgotPassword">Forgot Password?</Link>
+                            <Link href="/changepasswordpage" className="forgotPassword">Forgot Password?</Link>
                         </p>
                     </div>
                     
@@ -144,7 +146,7 @@ const LogInPage = () => {
                 </form>
                 
                 <hr className="hr"/>
-                <HaveAccount leftSide="Don't have an account?" rightSide="Sign up" To="/SignUpPage" />
+                <HaveAccount leftSide="Don't have an account?" rightSide="Sign up" To="/signuppage" />
             </div>
         </div>
     );

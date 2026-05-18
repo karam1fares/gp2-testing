@@ -18,6 +18,7 @@ public class SecurityConfig {
         .cors(Customizer.withDefaults())
         .csrf(csrf->csrf.disable())
         .authorizeHttpRequests(auth->auth
+         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
          .requestMatchers("/jamrik/register").permitAll()
          .anyRequest().authenticated()
           )

@@ -91,9 +91,9 @@ const handleValidate = async () => {
 
         // 3. Assemble Multipart Payload
         const formData = new FormData();
-        // Appending to the same key creates a clean Indexed Collection List for Java
-        formData.append("files", filesData[0].file);
-        formData.append("files", filesData[1].file);
+        // Backend expects the part name 'docs' for the multipart list
+        formData.append("docs", filesData[0].file);
+        formData.append("docs", filesData[1].file);
         
         // // Optional: Sending types if your backend logic expects cross-referencing values
         // formData.append("types", filesData[0].docType);
@@ -111,14 +111,14 @@ const handleValidate = async () => {
             }
 
             // Expecting either a flat string response or a JSON object containing a result field
-            const data = await response.json();
+            // HSCode validation returns plain text from the backend AI service
+            const text = await response.text();
             
             // Close the processing spinner
             Swal.close();
 
             // 5. Update Local State UI
-            // Adapt 'data.result' based on your precise backend return layout structure
-            setAiValidationResult(data.result || JSON.stringify(data));
+            setAiValidationResult(text);
             setDisplayAiResult(true);
 
             Swal.fire({ 

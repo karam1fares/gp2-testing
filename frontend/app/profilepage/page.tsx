@@ -70,7 +70,7 @@ const handleSaveChanges = async () => {
           <AvatarSelector avatarClickedToggle={avatarClickedToggle}/> 
         </div>
         }
-            <BackArrow to="/DashBoard" />
+            <BackArrow to="/dashboard" />
               <div className="userIdProfilePage">{id}</div>
         
           <div className="UserProfileInfoContainer">
@@ -97,7 +97,7 @@ const handleSaveChanges = async () => {
                 </select>
 
               </div>
-              <Link href="/ChangePasswordPage" className="changePasswordLink">Change Password</Link>
+              <Link href="/changepasswordpage" className="changePasswordLink">Change Password</Link>
 
           <button className="submitChangesBtn" type="submit" onClick={handleSaveChanges}>Save Changes</button>
           <hr className="hr"/>

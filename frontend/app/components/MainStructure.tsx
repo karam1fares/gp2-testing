@@ -18,9 +18,9 @@ const MainStructure = (props: MainStructureProps) => {
   const handleProfileClick = (e: React.MouseEvent) => {
     e.preventDefault();
     if (userContext.userName === "Account Type") {
-      router.push("/LogInPage");
+      router.push("/loginpage");
     } else {
-      router.push("/ProfilePage");
+      router.push("/profilepage");
     }
   };
     return (
@@ -34,35 +34,35 @@ const MainStructure = (props: MainStructureProps) => {
             </div>
 
             <div className="leftBar">
-                <Link href="/DashBoard">
+                <Link href="/dashboard">
                 <div className="LeftBarItems">
                 <Image src="/icons/Dashboard.png" alt="Dashboard" width={24} height={24} />
                 <p>{t("Dashboard")}</p>
                 </div>
                 </Link>
 
-                <Link href="/NewShipment" >
+                <Link href="/newshipment" >
                 <div className="LeftBarItems">
                 <Image src="/icons/New.png" alt="New Shipment" width={24} height={24} />
                 <p>{t("New Shipment")}</p>
                 </div>
                 </Link>
 
-                <Link href="/Shipments">
+                <Link href="/shipments">
                 <div className="LeftBarItems">
                 <Image src="/icons/Shipment.png" alt="Shipments" width={24} height={24} />
                 <p>{t("Shipments")}</p>
                 </div>
                 </Link>
                 
-                <Link href="/HsCodeAssistant" >
+                <Link href="/hscodeassistant" >
                 <div className="LeftBarItems">
                 <Image src="/icons/search.png" alt="HS Code Assistant" width={24} height={24} />
                 <p>{t("HS Code Assistant")}</p>
                 </div>
                 </Link>
 
-                <Link href="/ValidationPage" >
+                <Link href="/validationpage" >
                 <div className="LeftBarItems">
                 <Image src="/icons/mainCircle.png" alt="Validation Page" width={24} height={24} />
                 <p>{t("Validation")}</p>
