@@ -92,7 +92,7 @@ const HsCodeAssistant = () => {
                 <textarea placeholder={t("Enter product description")} ref={productDescriptionRef} />
                </div>
                <div>
-               <Button buttonFun={handleSubmit} iconSrc="/icons/searchIcon.png" iconName="search icon" buttonType="submit" buttonDesc={t("Find HS Code")} />
+               <Button buttonFun={handleSubmit} iconSrc="/icons/searchicon.png" iconName="search icon" buttonType="submit" buttonDesc={t("Find HS Code")} />
             </div>
 
             </div>

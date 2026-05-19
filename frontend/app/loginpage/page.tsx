@@ -30,7 +30,6 @@ const LogInPage = () => {
         setNoErrors(prev => !prev);
     };
 
-    // Keep state sync on type change events
     const handleDataChange = () => {
         setLogInDataForm({
             userName: userNameRef.current ? userNameRef.current.value : "",

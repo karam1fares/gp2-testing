@@ -3,7 +3,7 @@ import LogInStructure from "../components/LogInStructure";
 import LogInInputs from "../components/LogInInputs";
 import Button from "../components/Button";
 import HaveAccount from "../components/HaveAccount";
-import { useState ,useRef, useEffect, useContext } from "react";
+import { useState ,useRef, useContext } from "react";
 import { useRouter } from "next/navigation";
 import "./page.css";
 import UserContext from "../components/UserContext";

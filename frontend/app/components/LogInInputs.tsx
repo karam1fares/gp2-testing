@@ -2,7 +2,7 @@
 import { useState } from "react";
 import "./LogInInputs.css";
 import Image from 'next/image';
-import { useEffect } from "react";
+// import { useEffect } from "react";
 type logInInputsProps = {
 label: string;
 iconSrc: string;
@@ -27,17 +27,17 @@ const LogInInputs = ({ iconSrc, iconName, label, placeholder, inputType, inputNa
             : inputType;
         const currentEyeIcon = isPasswordVisible ? "/icons/eye.png" : "/icons/eyeOff.png";
 
-         const [fieldInput, setFieldInput] = useState("");
+         const [fieldInput, setFieldInput] = useState(initialValue || "");
          const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             setFieldInput(e.target.value);
             onValueChange(e.target.value);
         };
 
-        useEffect(() => {
-     if (initialValue !== undefined && initialValue !== fieldInput) {
-         setFieldInput(initialValue);
-           }
-         }, [initialValue]);
+    //     useEffect(() => {
+    //  if (initialValue !== undefined && initialValue !== fieldInput) {
+    //      setFieldInput(initialValue);
+    //        }
+    //      }, [initialValue]);
         
         return (
         <div>
