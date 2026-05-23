@@ -74,6 +74,48 @@ public class HSCodeAIService {
                 .content();
     }
 
+    // Generate a Customs Declaration Form based on shipment documents
+    // The AI will analyze all documents and produce a structured customs declaration
+    public String generateCustomsDeclaration(String referenceNumber) {
+        Shipment shipment = shipmentRepo.findByReferenceNumber(referenceNumber)
+                .orElseThrow(() -> new RuntimeException("Shipment not found"));
+        List<Document> docs = shipmentService.searchDocs(referenceNumber);
+        if (docs.isEmpty()) {
+            throw new RuntimeException("No documents found for this shipment");
+        }
+        List<String> content = new ArrayList<>();
+        for (Document d : docs) {
+            content.add(d.getContent());
+        }
+        String combinedContent = String.join("\n", content);
+
+        // TODO: When the AI is fully connected, this prompt can be refined
+        // The AI will generate a customs declaration form based on the documents
+        return this.chatclient.prompt()
+                .system("""
+                        You are a Jordanian customs declaration expert. Based on the following trade documents 
+                        (which may include commercial invoices, packing lists, certificates of origin, airway bills, etc.),
+                        generate a complete Customs Declaration Form (بيان جمركي).
+                        
+                        The form should include the following sections clearly formatted:
+                        1. DECLARATION NUMBER & DATE
+                        2. IMPORTER/EXPORTER INFORMATION (name, address, tax ID if available)
+                        3. SHIPMENT DETAILS (origin, destination, mode of transport)
+                        4. GOODS DESCRIPTION (item descriptions, quantities, units, weights)
+                        5. HS CODE CLASSIFICATION (suggest appropriate HS codes for each item)
+                        6. VALUES (declared value, currency, FOB/CIF values)
+                        7. DUTIES & TAXES ESTIMATION (customs duty rates, sales tax, other fees)
+                        8. TOTAL DECLARATION SUMMARY
+                        
+                        Format the output clearly with section headers and organized data.
+                        Use both English and Arabic labels where appropriate.
+                        If any required information is missing from the documents, mark it as [REQUIRED - NOT FOUND IN DOCUMENTS].
+                        """)
+                .user(combinedContent)
+                .call()
+                .content();
+    }
+
     public String validate(List<MultipartFile> docs) {
         List<String> allExtractedTexts = new ArrayList<>();
         for (MultipartFile file : docs) {
