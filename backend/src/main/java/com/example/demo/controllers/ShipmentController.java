@@ -52,8 +52,8 @@ public class ShipmentController {
         return shipmentService.delete(referenceNumber);
     }
     @GetMapping("/searchAll")
-    public List<Shipment> searchAll(){
-        return shipmentService.searchAll();
+    public List<Shipment> searchAll(Authentication auth){
+        return shipmentService.searchAllByUser(auth.getName());
     }
     @GetMapping("/searchAllDocs")
     public List<Document> searchAllDocuments(@RequestParam String referenceNumber){

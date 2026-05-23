@@ -69,6 +69,10 @@ public class ShipmentService {
     public List<Shipment> searchAll(){
         return shipmentRepo.findAll();
     }
+    //search all shipments for a specific user by username
+    public List<Shipment> searchAllByUser(String userName){
+        return shipmentRepo.findByOwnerUserName(userName);
+    }
     //search all docs for a givin shipment
     public List<Document> searchDocs(String referenceNumber){
         return documentRepo.findByReferenceNumber(referenceNumber);

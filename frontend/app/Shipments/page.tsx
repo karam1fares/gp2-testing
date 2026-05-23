@@ -10,13 +10,13 @@ import { toast } from "sonner";
 import Button from "../components/Button"; // Or simply use native buttons
 const Shipments = () => {
     const { t } = useContext(LanguageContext);
-    const [allShipments, setAllShipments] = useState([
-        {
-            shipmentName: "Create Shipment",
-            referenceNumber: "shipment reference number",
-            status: "Shipment Status",
-        }
-    ]);
+    const defaultShipment = {
+        shipmentName: "Create Shipment",
+        referenceNumber: "shipment reference number",
+        status: "Shipment Status",
+    };
+
+    const [allShipments, setAllShipments] = useState([defaultShipment]);
 
     useEffect(() => {
         const fetchShipments = async () => {
@@ -29,12 +29,8 @@ const Shipments = () => {
                         setAllShipments(data);
                         setClickedShipmentData(data[0]);
                     } else {
-                        setAllShipments([]);
-                        setClickedShipmentData({
-                            shipmentName: "Create Shipment",
-                            referenceNumber: "shipment reference number",
-                            status: "Shipment Status",
-                        });
+                        setAllShipments([defaultShipment]);
+                        setClickedShipmentData(defaultShipment);
                     }
                 } else {
                     console.error("Failed to fetch shipments");
@@ -93,24 +89,17 @@ const Shipments = () => {
             });
 
             if (response.ok) {
-                setAllShipments(prev => {
-                    const newShipments = prev.filter(s => s.referenceNumber !== referenceNumber);
-                    setClickedShipmentData(current => {
-                        if (current.referenceNumber === referenceNumber) {
-                            if (newShipments.length > 0) {
-                                return newShipments[0];
-                            } else {
-                                return {
-                                    shipmentName: "Create Shipment",
-                                    referenceNumber: "shipment reference number",
-                                    status: "Shipment Status",
-                                };
-                            }
-                        }
-                        return current;
-                    });
-                    return newShipments;
-                });
+                const newShipments = allShipments.filter(s => s.referenceNumber !== referenceNumber);
+                
+                if (newShipments.length > 0) {
+                    setAllShipments(newShipments);
+                    if (clickedShipmentData.referenceNumber === referenceNumber) {
+                        setClickedShipmentData(newShipments[0]);
+                    }
+                } else {
+                    setAllShipments([defaultShipment]);
+                    setClickedShipmentData(defaultShipment);
+                }
                 toast.success(t("Shipment deleted successfully."), { id: toastId });
             } else {
                 const error = await response.text();

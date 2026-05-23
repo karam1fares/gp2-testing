@@ -141,8 +141,13 @@ const handleSubmit2 = async (e: React.FormEvent) => {
               router.push("/shipments");
             }
         } else {
-            const errorMsg = await response.text();
-            toast.error(t("Error: ") + errorMsg, { id: toastId });
+            try {
+                const errorData = await response.json();
+                toast.error(errorData.error || t("Failed to create shipment."), { id: toastId });
+            } catch {
+                const errorText = await response.text();
+                toast.error(errorText || t("Failed to create shipment."), { id: toastId });
+            }
         }
     } catch (error) {
         console.error("Connection error:", error);
