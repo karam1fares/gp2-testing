@@ -49,12 +49,13 @@ const ChangePasswordPage = () => {
             const url = `http://localhost:8080/jamrik/changePassword/${encodeURIComponent(ChangePasswordInfo.userName)}`;
             const response = await fetch(url, {
                 method: "PUT",
+                credentials: "include",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
                     userName: ChangePasswordInfo.userName,
-                    oldPassword: ChangePasswordInfo.oldPassword,
+                    currentPassword: ChangePasswordInfo.oldPassword,
                     newPassword: ChangePasswordInfo.newPassword,
                 }),
             });

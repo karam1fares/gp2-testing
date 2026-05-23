@@ -8,6 +8,7 @@ import "./style.css";
 import LogInInputs from "../components/LogInInputs";
 import Link from "next/dist/client/link";
 import Swal from "sweetalert2";
+import { useRouter } from "next/navigation";
 const ProfilePage = () => {
   const [avatarClicked, setAvatarClicked] = useState(false);
   const avatarClickedToggle = () => {  setAvatarClicked(!avatarClicked);};
@@ -26,11 +27,34 @@ const handleDataChange = () => {
       userRole: ChangeUserInfo.userRole, 
     });
 };
+const router = useRouter();
+
+const handleLogOut = async () => {
+    try {
+        const response = await fetch("http://localhost:8080/jamrik/logout", {
+            method: "POST",
+            credentials: "include"
+        });
+        
+        if (response.ok) {
+            setUserData({ userName: "Account Type", id: "Demo Account", email: "", avatarUrl: "0" });
+            Swal.fire({ text: "Logged out successfully!", icon: "success" }).then(() => {
+                router.push("/loginpage");
+            });
+        } else {
+            Swal.fire({ text: "Logout failed", icon: "error" });
+        }
+    } catch (error) {
+        console.error("Logout error:", error);
+        Swal.fire({ text: "Could not connect to the backend server.", icon: "error" });
+    }
+};
 const handleSaveChanges = async () => {
     try {
         const url = `http://localhost:8080/jamrik/changeData/${encodeURIComponent(userName)}`;
         const response = await fetch(url, {
             method: "PUT",
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json",
             },
@@ -101,7 +125,7 @@ const handleSaveChanges = async () => {
 
           <button className="submitChangesBtn" type="submit" onClick={handleSaveChanges}>Save Changes</button>
           <hr className="hr"/>
-          <button className="logOutBtn" type="submit" >Log Out</button>
+          <button className="logOutBtn" type="submit" onClick={handleLogOut}>Log Out</button>
           </div>
         
         </div>

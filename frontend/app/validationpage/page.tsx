@@ -103,6 +103,7 @@ const handleValidate = async () => {
             // 4. API Request to Spring Boot Endpoint
             const response = await fetch("http://localhost:8080/jamrik/codes/validate", {
                 method: "POST",
+                credentials: "include",
                 body: formData
             });
 

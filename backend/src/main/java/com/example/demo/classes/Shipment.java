@@ -17,14 +17,14 @@ public class Shipment {
     @Column(nullable=false,unique=true)
     private String shipmentName;
     @Column(nullable=false)
-    private String status;
+    private String status = "Pending";
     @Column(nullable=false, updatable=false)
     @JsonFormat(pattern="yyyy-MM-dd")
     private LocalDate createdDate;
     @OneToMany(mappedBy="shipment", cascade=CascadeType.ALL, orphanRemoval=true)
     private List<Document> documents=new ArrayList<>();
     @ManyToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name = "user_username", referencedColumnName = "userName")
+    @JoinColumn(name = "user_id")
     private User owner;
 
     public Shipment(String referenceNumber, String ShipmentName,

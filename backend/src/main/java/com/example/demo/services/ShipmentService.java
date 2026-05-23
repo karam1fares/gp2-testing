@@ -42,6 +42,7 @@ public class ShipmentService {
         shipment.setShipmentName(sDTO.shipmentName());
         shipment.setReferenceNumber(sDTO.referenceNumber());
         shipment.setCreatedDate(LocalDate.now());
+        shipment.setStatus(sDTO.status() != null ? sDTO.status() : "Pending");
         //the shipment user is the user in the current session, set attribute
         shipment.setOwner(user);
         //save the new shipment in the DB

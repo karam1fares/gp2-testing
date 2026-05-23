@@ -36,11 +36,9 @@ const SignUpPage = () => {
   const router = useRouter();
   const { setUserData, avatarUrl} = useContext(UserContext);
 
-  const noErrorsToggle = () => {if(noErrors) {
-      setNoErrors(false);
-  } else {
-      setNoErrors(true);
-  }};
+  const noErrorsToggle = (valid: boolean) => {
+      setNoErrors(valid);
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -52,6 +50,7 @@ const SignUpPage = () => {
         console.log("Submitting registration data to backend...");
             const response = await fetch("http://localhost:8080/jamrik/register", {
                 method: "POST",
+                credentials: "include",
                 headers: {
                     "Content-Type": "application/json",
                 },
@@ -69,7 +68,7 @@ const SignUpPage = () => {
                 const data = await response.json();
                 setUserData({
                     userName: data.userName,
-                    id: data.id,
+                    id: data.userName,
                     email: data.email,
                     avatarUrl: avatarUrl,
                 });

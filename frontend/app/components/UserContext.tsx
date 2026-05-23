@@ -1,5 +1,5 @@
 "use client";
-import { createContext, useState, ReactNode } from "react";
+import { createContext, useState, useEffect, ReactNode } from "react";
 
 type UserData = {
   userName: string;
@@ -25,20 +25,35 @@ const UserContext = createContext<UserContextType>({
 });
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
-  // 4. Initialize the state with the avatarUrl
-  const [userData, setUserData] = useState<UserData>({ 
+  const [userData, setUserDataState] = useState<UserData>({ 
     userName: "Account Type", 
     id: "Demo Account",
     email: "",
     avatarUrl: "0",
   });
 
+  useEffect(() => {
+    const storedData = localStorage.getItem("jamrikUserData");
+    if (storedData) {
+      try {
+        setUserDataState(JSON.parse(storedData));
+      } catch (e) {
+        console.error("Failed to parse user data", e);
+      }
+    }
+  }, []);
+
+  const setUserData = (data: UserData) => {
+    setUserDataState(data);
+    localStorage.setItem("jamrikUserData", JSON.stringify(data));
+  };
+
   return (
     <UserContext.Provider 
       value={{ 
         userName: userData.userName, 
         id: userData.id, 
-        avatarUrl: userData.avatarUrl, // 5. Pass it through the provider
+        avatarUrl: userData.avatarUrl,
         email: userData.email,
         setUserData 
       }}

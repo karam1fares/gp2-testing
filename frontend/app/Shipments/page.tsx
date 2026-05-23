@@ -20,11 +20,14 @@ const Shipments = () => {
     useEffect(() => {
         const fetchShipments = async () => {
             try {
-                const response = await fetch("http://localhost:8080/jamrik/shipments/searchAll"); 
+                const response = await fetch("http://localhost:8080/jamrik/shipments/searchAll", { credentials: "include" }); 
                 
                 if (response.ok) {
                     const data = await response.json();
                     setAllShipments(data);
+                    if (data && data.length > 0) {
+                        setClickedShipmentData(data[0]);
+                    }
                 } else {
                     console.error("Failed to fetch shipments");
                 }
@@ -64,6 +67,7 @@ const Shipments = () => {
             
             const response = await fetch(url, {
                 method: "DELETE",
+                credentials: "include",
             });
 
             if (response.ok) {
@@ -85,7 +89,7 @@ const Shipments = () => {
     if (!clickedShipmentData?.referenceNumber) return;
     try {
         const url = `http://localhost:8080/jamrik/shipments/searchAllDocs?referenceNumber=${clickedShipmentData.referenceNumber}`;
-        const response = await fetch(url);
+        const response = await fetch(url, { credentials: "include" });
         if (response.ok) {
             const data = await response.json();
             setAllDocuments(Array.isArray(data) ? data : [data]);
@@ -114,7 +118,7 @@ useEffect(() => {
         if (result.isConfirmed) {
             try {
                 const url = `http://localhost:8080/jamrik/documents/delete/${encodeURIComponent(clickedShipmentData.referenceNumber)}?documentName=${encodeURIComponent(documentName)}`;
-                const response = await fetch(url, { method: "DELETE" });
+                const response = await fetch(url, { method: "DELETE", credentials: "include" });
 
                 if (response.ok) {
                     setAllDocuments(prev => prev.filter(doc => doc.documentName !== documentName));
@@ -143,7 +147,7 @@ useEffect(() => {
                 <option value="Certificate of Origin">${t("Certificate of Origin")}</option>
                 <option value="Other">${t("Other")}</option>
             </select>
-            <input type="file" id="documentFile" class="swal2-file" style="width: 260px; margin-top: 8px;">
+            <input type="file" id="documentFile" accept=".pdf,.doc,.docx" class="swal2-file" style="width: 260px; margin-top: 8px;">
         </div>
         `,
         focusConfirm: false,
@@ -164,6 +168,17 @@ useEffect(() => {
                 return false;
             }
 
+            if (documentFile.size > 10 * 1024 * 1024) {
+                Swal.showValidationMessage(t("Please upload a file smaller than 10MB"));
+                return false;
+            }
+
+            const fileName = documentFile.name.toLowerCase();
+            if (!fileName.endsWith(".pdf") && !fileName.endsWith(".doc") && !fileName.endsWith(".docx")) {
+                Swal.showValidationMessage(t("Please upload PDF or Word files only"));
+                return false;
+            }
+
             // 2. Pack everything cleanly into a Multipart FormData payload
             const formData = new FormData();
             formData.append("file", documentFile);
@@ -174,14 +189,16 @@ useEffect(() => {
                 // 3. Make the API Call to your Spring Boot uploadOne route
                 const response = await fetch(`http://localhost:8080/jamrik/documents/uploadOne/${encodeURIComponent(shipmentReference)}`, {
                     method: "POST",
+                    credentials: "include",
                     body: formData, // Passing formData automatically sets content-type to multipart/form-data
                 });
 
                 if (!response.ok) {
-                    throw new Error("Failed to upload document");
+                    const errorText = await response.text();
+                    throw new Error(errorText || "Failed to upload document");
                 }
 
-                return await response.json(); // Pass server response down to the .then() block
+                return await response.text(); // Pass server response down to the .then() block
             } catch (error) {
                 Swal.showValidationMessage(`${t("Upload failed")}: ${error instanceof Error ? error.message : error}`);
                 return false;
@@ -240,7 +257,8 @@ const handleAnalyzeDocuments = async () => {
         const url = `http://localhost:8080/jamrik/codes/analyzeDocs/${encodeURIComponent(clickedShipmentData.referenceNumber)}`;
         
         const response = await fetch(url, {
-            method: "GET" // Using GET since backend mapping is GetMapping
+            method: "GET", // Using GET since backend mapping is GetMapping
+            credentials: "include",
         });
 
         if (!response.ok) {

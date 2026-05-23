@@ -21,7 +21,7 @@ const LogInInputs = ({ iconSrc, iconName, label, placeholder, inputType, inputNa
         const togglePasswordVisibility = () => {
             setIsPasswordVisible(!isPasswordVisible);
         };
-        const isPasswordField = inputName === "password" || inputName === "confirmPassword";
+        const isPasswordField = inputType === "password" || inputName.toLowerCase().includes("password");
         const resolvedInputType = isPasswordField
             ? (isPasswordVisible ? "text" : "password")
             : inputType;

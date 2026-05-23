@@ -67,6 +67,7 @@ user.setPassword(hash.encode(rdto.password()));
         user.setUserName(cdto.userName());
         user.setEmail(cdto.email());
         user.setRole(cdto.role());
+        user.setAvatar(cdto.avatar());
         //save the new user data in the db
           User updatedUser=jamrikRepo.save(user);
           return new UserResponseDTO(
@@ -78,7 +79,7 @@ user.setPassword(hash.encode(rdto.password()));
 }
     public void changePassword(String userName, PasswordDTO pDTO){
             //find the user in the db
-            User user = jamrikRepo.findById(userName)
+            User user = jamrikRepo.findByUserName(userName)
                     .orElseThrow(() -> new RuntimeException("User not found"));
             //compare current password to one in db
             if (!hash.matches(pDTO.currentPassword(), user.getPassword())) {

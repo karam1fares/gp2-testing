@@ -26,8 +26,8 @@ const LogInPage = () => {
     const router = useRouter();
     const { setUserData } = useContext(UserContext);
 
-    const noErrorsToggle = () => {
-        setNoErrors(prev => !prev);
+    const noErrorsToggle = (valid: boolean) => {
+        setNoErrors(valid);
     };
 
     const handleDataChange = () => {
@@ -57,6 +57,7 @@ const LogInPage = () => {
 
             const response = await fetch("http://localhost:8080/jamrik/login", {
                 method: "POST",
+                credentials: "include",
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded",
                 },

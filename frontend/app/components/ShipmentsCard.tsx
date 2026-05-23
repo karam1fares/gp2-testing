@@ -1,4 +1,3 @@
-import { stat } from "fs";
 import "./ShipmentsCard.css";
 type ShipmentsCardProps = {
     shipmentName: string;
@@ -14,7 +13,8 @@ const ShipmentsCard = ({shipmentName, referenceNumber,status, handleDeleteShipme
         const url = `http://localhost:8080/jamrik/shipments/changeStatus/${encodeURIComponent(referenceNumber)}?status=${encodeURIComponent(newStatus)}`;
         
         const response = await fetch(url, {
-            method: "POST", 
+            method: "POST",
+            credentials: "include",
         });
 
         if (response.ok) {

@@ -43,9 +43,27 @@ public class DocumentService {
         for (int i=0;i<files.size();i++) {
             MultipartFile file = files.get(i);
             DocumentMetadata meta = metadata.get(i);
+            
+            String originalFilename = file.getOriginalFilename();
+            if (originalFilename != null) {
+                String lower = originalFilename.toLowerCase();
+                if (!lower.endsWith(".pdf") && !lower.endsWith(".doc") && !lower.endsWith(".docx")) {
+                    return ResponseEntity.status(400).body("Please upload PDF or Word files only");
+                }
+            }
+            if (file.getSize() > 10 * 1024 * 1024) {
+                return ResponseEntity.status(400).body("Please upload a file smaller than 10MB");
+            }
+
+            String rawText = "";
             try {
-                //calling the method responsible for extracting text
-                String rawText = extractTextFromDocument(file);
+                if (originalFilename != null && originalFilename.toLowerCase().endsWith(".pdf")) {
+                    //calling the method responsible for extracting text
+                    rawText = extractTextFromDocument(file);
+                }
+            } catch (IOException e) {
+                    System.err.println("Failed to extract text from: " + meta.name());
+                }
                 //create new doc object
                 Document document = new Document();
                 //link the document with its shipment
@@ -61,10 +79,9 @@ public class DocumentService {
                 //save the new document in the document table
                 documentRepo.save(document);
                 //adding the extracted text from current file to the list
-                allExtractedTexts.add(rawText);
-            } catch (IOException e) {
-                System.err.println("Failed to extract text from: " + meta.name());
-            }
+                if (!rawText.isEmpty()) {
+                    allExtractedTexts.add(rawText);
+                }
         }
         return ResponseEntity.ok("upload successful");
         }
@@ -93,26 +110,41 @@ public class DocumentService {
          //checking whether the requested shipment is within the db
          Shipment shipment=shipmentRepo.findByReferenceNumber(referenceNumber)
                  .orElseThrow(()-> new RuntimeException("Shipment not found"));
-         try {
-             //calling the method responsible for extracting text
-             String rawText = extractTextFromDocument(file);
-             //create new doc object
-             Document document = new Document();
-             //link the document with its shipment
-             document.setShipment(shipment);
-             //setting the document's name from the user
-             document.setDocumentName(fileName);
-             //COO, PL, AB?
-             document.setDocumentType(fileType);
-             //save the content of the doc in the db table
-             document.setContent(rawText);
-             //store the new document in the list of documents in the shipment class
-             shipment.addDocument(document);
-             //save the new document in the document table
-             documentRepo.save(document);
-         } catch (IOException e) {
-             System.err.println("Failed to extract text from: ");
+                 
+         String originalFilename = file.getOriginalFilename();
+         if (originalFilename != null) {
+             String lower = originalFilename.toLowerCase();
+             if (!lower.endsWith(".pdf") && !lower.endsWith(".doc") && !lower.endsWith(".docx")) {
+                 return ResponseEntity.status(400).body("Please upload PDF or Word files only");
+             }
          }
+         if (file.getSize() > 10 * 1024 * 1024) {
+             return ResponseEntity.status(400).body("Please upload a file smaller than 10MB");
+         }
+
+         String rawText = "";
+         try {
+             if (originalFilename != null && originalFilename.toLowerCase().endsWith(".pdf")) {
+                 //calling the method responsible for extracting text
+                 rawText = extractTextFromDocument(file);
+             }
+         } catch (IOException e) {
+             System.err.println("Failed to extract text from: " + fileName);
+         }
+         //create new doc object
+         Document document = new Document();
+         //link the document with its shipment
+         document.setShipment(shipment);
+         //setting the document's name from the user
+         document.setDocumentName(fileName);
+         //COO, PL, AB?
+         document.setDocumentType(fileType);
+         //save the content of the doc in the db table
+         document.setContent(rawText);
+         //store the new document in the list of documents in the shipment class
+         shipment.addDocument(document);
+         //save the new document in the document table
+         documentRepo.save(document);
         return ResponseEntity.ok("upload successful");
 }
 }

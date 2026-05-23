@@ -37,6 +37,19 @@ const NewShipment = () => {
     if (files && files.length > 0 && activeType) {
       const selectedFile = files[0];
 
+      if (selectedFile.size > 10 * 1024 * 1024) {
+          Swal.fire({ text: t("Please upload a file smaller than 10MB"), icon: "warning" });
+          e.target.value = "";
+          return;
+      }
+      
+      const fileName = selectedFile.name.toLowerCase();
+      if (!fileName.endsWith(".pdf") && !fileName.endsWith(".doc") && !fileName.endsWith(".docx")) {
+          Swal.fire({ text: t("Please upload PDF or Word files only"), icon: "warning" });
+          e.target.value = "";
+          return;
+      }
+
       setAllDocuments(prev => ({
         ...prev,
         [activeType]: [...prev[activeType], selectedFile]
@@ -97,6 +110,7 @@ const handleSubmit2 = async (e: React.FormEvent) => {
     try {
         const response = await fetch(`http://localhost:8080/jamrik/shipments/newShipment`, {
             method: "POST",
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json",
             },
@@ -106,6 +120,13 @@ const handleSubmit2 = async (e: React.FormEvent) => {
                 status: shipmentData.shipmentStatus,
             })
         });
+
+        if (response.redirected) {
+             Swal.fire({ text: t("Session expired. Please log in again."), icon: "warning" }).then(() => {
+                router.push("/loginpage");
+             });
+             return;
+        }
 
         if (response.ok) {
             await response.json();            
@@ -154,6 +175,7 @@ const handleFileUploadsForCreatingShipment = async (documents: UploadedDocs, shi
         // Send the request without setting manual Content-Type headers
         const response = await fetch(url, {
           method: "POST",
+          credentials: "include",
           body: formData, // Browser handles boundaries automatically
         });
 
@@ -204,7 +226,7 @@ const handleFileUploadsForCreatingShipment = async (documents: UploadedDocs, shi
         type="file"
         ref={fileInputRef}
         onChange={handleFileChange}
-        accept=".pdf,.doc,.docx,.xls,.xlsx"
+        accept=".pdf,.doc,.docx"
         style={{ display: 'none' }}
       />
 

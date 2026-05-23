@@ -13,6 +13,9 @@ import lombok.NoArgsConstructor;
 public class User {
     //it is the id in the db table
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     @Column(nullable=false,unique=true)
     private String userName;
     @Column(nullable=false,unique=true)

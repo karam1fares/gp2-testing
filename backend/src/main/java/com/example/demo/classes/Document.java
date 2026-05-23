@@ -10,15 +10,18 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Document {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     private String documentName;
     @Column(nullable=false)
     private String documentType;
-    @Column(nullable=false,unique=true)
     private String documentUrl;
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name = "shipment_referenceNumber", referencedColumnName = "referenceNumber")
     @JsonIgnore
     private Shipment shipment;
+    @Column(columnDefinition="TEXT")
     private String content;
     public Document(String documentName, String documentType, Shipment shipment) {
         this.documentName=documentName;

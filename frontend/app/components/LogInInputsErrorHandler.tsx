@@ -6,7 +6,7 @@ type LogInInputsErrorHandlerProps = {
     password?: string;
     confirmPassword?: string;
     userRole?: string;
-    noErrors: () => void;
+    noErrors: (valid: boolean) => void;
 };
 
 const LogInInputsErrorHandler = ({ fullName, email, password, confirmPassword, userRole, noErrors }: LogInInputsErrorHandlerProps) => {
@@ -51,9 +51,7 @@ const LogInInputsErrorHandler = ({ fullName, email, password, confirmPassword, u
 
 const errorsCount = errors.length;
     useEffect(() => {
-    if (errorsCount === 0) {
-        noErrors();
-    }
+    noErrors(errorsCount === 0);
 }, [errorsCount]); 
 
 if (errors.length === 0) return null;

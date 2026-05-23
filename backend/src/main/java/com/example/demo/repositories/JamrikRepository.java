@@ -6,7 +6,7 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 @Repository
-public interface JamrikRepository extends JpaRepository<User,String> {
+public interface JamrikRepository extends JpaRepository<User,Long> {
     @Query("SELECT u FROM User u WHERE u.userName = :username")
     Optional<User> findByUserName(@Param("username") String userName);
 }

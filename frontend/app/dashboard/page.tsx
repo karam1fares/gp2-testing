@@ -29,7 +29,7 @@ const DashBoard = () => {
         {
             title: t("Validation Page"),
             description: t("Validate your shipment documents before submission to ensure they meet customs requirements and avoid delays or penalties you can use this feature from the validation page if you don't want to add the documents to a specific shipment."),
-            iconSrc: "/icons/blackMainCircle.png",
+            iconSrc: "/icons/blackmainCircle.png",
         }
     ];
     const [explanationDataNeeded, setExplanationDataNeeded] = useState({
