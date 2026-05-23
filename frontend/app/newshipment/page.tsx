@@ -123,7 +123,7 @@ const handleSubmit2 = async (e: React.FormEvent) => {
         });
 
         if (response.redirected) {
-             toast.error(t("Session expired. Please log in again."), { id: toastId });
+             toast.error(t("Please log in to create shipments."), { id: toastId });
              router.push("/loginpage");
              return;
         }

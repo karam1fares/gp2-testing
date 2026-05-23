@@ -66,9 +66,12 @@ const ValidationPage = () => {
 
         e.target.value = ""; 
         setActiveIndex(null); 
-}};
- const [displayAiResult, setDisplayAiResult] = useState(false);
- const [aiValidationResult, setAiValidationResult] = useState<string>("");
+    }
+};
+
+const [displayAiResult, setDisplayAiResult] = useState(false);
+const [aiValidationResult, setAiValidationResult] = useState<string>("");
+
 const handleValidate = async () => {
         // 1. Validation Check
         if (filesData[0].file === null || filesData[1].file === null || filesData[0].docType === "" || filesData[1].docType === "") {
@@ -87,10 +90,6 @@ const handleValidate = async () => {
         // Backend expects the part name 'docs' for the multipart list
         formData.append("docs", filesData[0].file);
         formData.append("docs", filesData[1].file);
-        
-        // // Optional: Sending types if your backend logic expects cross-referencing values
-        // formData.append("types", filesData[0].docType);
-        // formData.append("types", filesData[1].docType);
 
         try {
             // 4. API Request to Spring Boot Endpoint
@@ -108,6 +107,11 @@ const handleValidate = async () => {
             // HSCode validation returns plain text from the backend AI service
             const text = await response.text();
             
+            // If the text contains HTML (e.g. login redirect), it's an error, not an AI result
+            if (text.trim().toLowerCase().startsWith("<!doctype html>") || text.trim().toLowerCase().startsWith("<html")) {
+                throw new Error("Validation engine service returned an error status.");
+            }
+            
             // 5. Update Local State UI
             setAiValidationResult(text);
             setDisplayAiResult(true);
@@ -115,7 +119,8 @@ const handleValidate = async () => {
             toast.success(t("Documents processed successfully! Review AI assessment below."), { id: toastId });
 
         } catch (error) {
-            toast.error(error instanceof Error ? error.message : t("Could not communicate with the engine server."), { id: toastId });
+            toast.dismiss(toastId);
+            toast.error(t("Validation engine service returned an error status."));
         }
     };
    
