@@ -7,7 +7,7 @@ import DocumentsCard from "../components/DocumentsCard";
 import { useRouter } from "next/navigation";
 import LogInInputs from "../components/LogInInputs";
 import { LanguageContext } from "../components/LanguageContext";
-import Swal from "sweetalert2";
+import { toast } from "sonner";
 
 type UploadedDocs = {
   [key: string]: File[];
@@ -38,14 +38,14 @@ const NewShipment = () => {
       const selectedFile = files[0];
 
       if (selectedFile.size > 10 * 1024 * 1024) {
-          Swal.fire({ text: t("Please upload a file smaller than 10MB"), icon: "warning" });
+          toast.warning(t("Please upload a file smaller than 10MB"));
           e.target.value = "";
           return;
       }
       
       const fileName = selectedFile.name.toLowerCase();
       if (!fileName.endsWith(".pdf") && !fileName.endsWith(".doc") && !fileName.endsWith(".docx")) {
-          Swal.fire({ text: t("Please upload PDF or Word files only"), icon: "warning" });
+          toast.warning(t("Please upload PDF or Word files only"));
           e.target.value = "";
           return;
       }
@@ -94,7 +94,7 @@ const handleSubmit1 = async (e: React.FormEvent) => {
     e.preventDefault();
     const totalFiles = Object.values(allDocuments).flat().length;
     if (totalFiles === 0) {
-        Swal.fire({ text: t("Please upload at least one document before creating the shipment."), icon: "warning" });
+        toast.warning(t("Please upload at least one document before creating the shipment."));
         return;
     }else{setCreateShipmentPressed(!createShipmentPressed);}
        
@@ -103,10 +103,11 @@ const handleSubmit2 = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!shipmentData.shipmentName || !shipmentData.shipmentReferenceNumber || !shipmentData.shipmentStatus) {
-        Swal.fire({ text: t("Please fill in all shipment details before submitting."), icon: "warning" });
+        toast.warning(t("Please fill in all shipment details before submitting."));
         return;
     }
 
+    const toastId = toast.loading(t("Creating shipment..."));
     try {
         const response = await fetch(`http://localhost:8080/jamrik/shipments/newShipment`, {
             method: "POST",
@@ -122,9 +123,8 @@ const handleSubmit2 = async (e: React.FormEvent) => {
         });
 
         if (response.redirected) {
-             Swal.fire({ text: t("Session expired. Please log in again."), icon: "warning" }).then(() => {
-                router.push("/loginpage");
-             });
+             toast.warning(t("Session expired. Please log in again."), { id: toastId });
+             router.push("/loginpage");
              return;
         }
 
@@ -134,21 +134,19 @@ const handleSubmit2 = async (e: React.FormEvent) => {
             const success = await handleFileUploadsForCreatingShipment(allDocuments, shipmentData.shipmentReferenceNumber);
             
             if (success) {
-              Swal.fire({ text: t("Shipment with the documents created successfully!"), icon: "success" }).then(() => {
-                router.push("/shipments");
-              });
+              toast.success(t("Shipment created successfully!"), { id: toastId });
+              router.push("/shipments");
             } else {
-              Swal.fire({ text: t("Shipment created, but documents failed to upload."), icon: "warning" }).then(() => {
-                router.push("/shipments");
-              });
+              toast.warning(t("Shipment created, but documents failed to upload."), { id: toastId });
+              router.push("/shipments");
             }
         } else {
             const errorMsg = await response.text();
-            Swal.fire({ text: t("Error: ") + errorMsg, icon: "error" });
+            toast.error(t("Error: ") + errorMsg, { id: toastId });
         }
     } catch (error) {
         console.error("Connection error:", error);
-        Swal.fire({ text: t("Could not connect to the backend server."), icon: "error" });
+        toast.error(t("Could not connect to the server."), { id: toastId });
     }
 };
 

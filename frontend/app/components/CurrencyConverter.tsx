@@ -1,5 +1,6 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
+import { LanguageContext } from "./LanguageContext";
 import "./CurrencyConverter.css";
 
 const CURRENCY_REGISTRY = [
@@ -88,6 +89,7 @@ const CURRENCY_REGISTRY = [
 ];
 
 export default function CurrencyConverter() {
+  const { t } = useContext(LanguageContext);
   const [baseCurrency, setBaseCurrency] = useState<string>("JOD");
   const [targetCurrency, setTargetCurrency] = useState<string>("USD");
 
@@ -149,11 +151,11 @@ export default function CurrencyConverter() {
     <div className="currency-converter-container">
       <div className="currency-converter-title">
         <span className="currency-converter-label">
-          1 {getName(baseCurrency)} equals
+          1 {t(getName(baseCurrency))} {t("equals")}
         </span>
         <h2 className="currency-converter-amount">
           {((1 / getFactor(baseCurrency)) * getFactor(targetCurrency)).toFixed(2)}{" "}
-          {getName(targetCurrency)}
+          {t(getName(targetCurrency))}
         </h2>
       </div>
 
@@ -172,10 +174,10 @@ export default function CurrencyConverter() {
             className="currency-select"
           >
             {regions.map((region) => (
-              <optgroup key={region} label={region} className="text-xs text-gray-400 font-sans">
+              <optgroup key={region} label={t(region)} className="text-xs text-gray-400 font-sans">
                 {CURRENCY_REGISTRY.filter((c) => c.region === region).map((currency) => (
                   <option key={currency.code} value={currency.code} className="text-gray-900 font-medium">
-                    {currency.code} — {currency.name}
+                    {currency.code} — {t(currency.name)}
                   </option>
                 ))}
               </optgroup>
@@ -197,10 +199,10 @@ export default function CurrencyConverter() {
             className="currency-select"
           >
             {regions.map((region) => (
-              <optgroup key={region} label={region} className="text-xs text-gray-400 font-sans">
+              <optgroup key={region} label={t(region)} className="text-xs text-gray-400 font-sans">
                 {CURRENCY_REGISTRY.filter((c) => c.region === region).map((currency) => (
                   <option key={currency.code} value={currency.code} className="text-gray-900 font-medium">
-                    {currency.code} — {currency.name}
+                    {currency.code} — {t(currency.name)}
                   </option>
                 ))}
               </optgroup>

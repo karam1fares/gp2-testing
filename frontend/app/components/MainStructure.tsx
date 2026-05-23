@@ -91,8 +91,8 @@ const MainStructure = (props: MainStructureProps) => {
                             </div>
                         </div>
                         <div className="accountInfo">
+                            <p className="accountName" style={{ fontFamily: "'Dancing Script', cursive, serif", fontSize: "18px", color: "#2B4B8A", fontWeight: "bold" }}>Hello!!</p>
                             <p className="accountName">{userContext.userName}</p>
-                            <p className="accountRole">{userContext.id}</p>
                         </div>
                         </div>
                     </div>

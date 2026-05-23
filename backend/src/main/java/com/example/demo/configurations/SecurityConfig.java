@@ -15,6 +15,10 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+    private final com.example.demo.repositories.JamrikRepository jamrikRepo;
+    public SecurityConfig(com.example.demo.repositories.JamrikRepository jamrikRepo) {
+        this.jamrikRepo = jamrikRepo;
+    }
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -33,7 +37,13 @@ public class SecurityConfig {
                            authentication)->{
           response.setStatus(HttpServletResponse.SC_OK);
           response.setContentType("application/json");
-          response.getWriter().write("{\"message\": \"Login successful\"}");
+          com.example.demo.classes.User user = jamrikRepo.findByUserName(authentication.getName()).orElse(null);
+          if (user != null) {
+              String json = String.format("{\"id\":\"%d\",\"userName\":\"%s\",\"email\":\"%s\",\"role\":\"%s\",\"avatar\":\"%s\"}", user.getId(), user.getUserName(), user.getEmail(), user.getRole(), user.getAvatar());
+              response.getWriter().write(json);
+          } else {
+              response.getWriter().write("{\"message\": \"Login successful\"}");
+          }
           })
           .failureHandler((request,response,
                            exception)->{

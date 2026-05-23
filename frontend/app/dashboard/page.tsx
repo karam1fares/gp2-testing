@@ -13,23 +13,28 @@ const DashBoard = () => {
     const featuresExplanation = [
         {
             title: t("New Shipment"),
-            description: t("Digitize your invoices, packing lists, and certificates to start a new shipment clearance process and get a automated customs declaration Form or report with any errors in the submitted documents, along with an estimated cost of the shipment."),
+            description: t("Streamline your logistics by digitizing invoices, packing lists, and certificates. Automatically generate customs declarations, identify document discrepancies, and receive instant cost estimations for your shipments."),
             iconSrc: "/icons/blackNew.png",
         },
         {
-            title: t("Issues Detected"),
-            description: t("Get real-time alerts on potential issues in your shipments, such as documentation errors, missing information, or mismatched data."),
-            iconSrc:"/icons/blackWarning.png",
-        },
-        {
             title: t("HS Codes"),
-            description: t("Get the HS codes for your products and the Customs Duty information for this specific product."),
+            description: t("Quickly identify the correct Harmonized System (HS) codes for your products. Access up-to-date customs duty rates and regulatory requirements for seamless international trade."),
             iconSrc: "/icons/blackSearch.png",
         },
         {
             title: t("Validation Page"),
-            description: t("Validate your shipment documents before submission to ensure they meet customs requirements and avoid delays or penalties you can use this feature from the validation page if you don't want to add the documents to a specific shipment."),
+            description: t("Pre-screen your documents before official submission. Ensure all paperwork meets strict customs requirements to avoid costly penalties and shipment hold-ups."),
             iconSrc: "/icons/blackmainCircle.png",
+        },
+        {
+            title: t("Currency Converter"),
+            description: t("Stay on top of international exchange rates. Instantly convert currencies to accurately estimate your shipping costs and customs duties in your local currency."),
+            iconSrc: "/icons/badge-dollar-sign.png",
+        },
+        {
+            title: t("Shipment Calendar"),
+            description: t("Organize your logistics timeline effectively. Add custom notes, track important deadlines, and manage your clearance schedule all in one place."),
+            iconSrc: "/icons/calendar-sync.png",
         }
     ];
     const [explanationDataNeeded, setExplanationDataNeeded] = useState({

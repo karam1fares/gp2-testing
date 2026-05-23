@@ -10,8 +10,9 @@ import { useRouter } from "next/navigation";
 import UserContext from "../components/UserContext";
 import { useContext } from "react";
 import LogInInputsErrorHandler from "../components/LogInInputsErrorHandler";
+import { LanguageContext } from "../components/LanguageContext";
 import Link from "next/link";
-import Swal from "sweetalert2";
+import { toast } from "sonner";
 
 const LogInPage = () => {
     const [LogInDataForm, setLogInDataForm] = useState({
@@ -25,6 +26,7 @@ const LogInPage = () => {
     const [noErrors, setNoErrors] = useState(false);
     const router = useRouter();
     const { setUserData } = useContext(UserContext);
+    const { t } = useContext(LanguageContext);
 
     const noErrorsToggle = (valid: boolean) => {
         setNoErrors(valid);
@@ -47,14 +49,13 @@ const LogInPage = () => {
         if (!noErrors) {
             return;
         }
-        
+        const toastId = toast.loading(t("Logging in..."));
         try {
+            toast.loading(t("Connecting to server..."), { id: toastId });
             const urlEncodedData = new URLSearchParams();
             urlEncodedData.append("username", currentUsername);
             urlEncodedData.append("password", currentPassword);
-
-            console.log("Sending authentication payload to backend...");
-
+            
             const response = await fetch("http://localhost:8080/jamrik/login", {
                 method: "POST",
                 credentials: "include",
@@ -63,35 +64,25 @@ const LogInPage = () => {
                 },
                 body: urlEncodedData.toString(),
             });
-            console.log("Received response from backend:", response);
 
             if (response.ok) {
-                // Backend's formLogin success handler currently returns a simple success message.
-                // Populate minimal user context using the submitted username so the frontend remains functional.
-                console.log("Login successful, setting user context and redirecting...");
+                const data = await response.json();
                 setUserData({
-                    userName: currentUsername,
-                    id: "",
-                    email: "",
-                    avatarUrl: "0",
+                    userName: data.userName || currentUsername,
+                    id: String(data.id || ""),
+                    role: data.role || "",
+                    email: data.email || "",
+                    avatarUrl: data.avatar || "0",
                 });
-                console.log("User context set:", { userName: currentUsername, id: "", email: "", avatarUrl: "0" });
-                Swal.fire({
-                    title: "Success!",
-                    text: "Logged in successfully",
-                    icon: "success",
-                    timer: 1500,
-                    showConfirmButton: false
-                });
-                console.log("Redirecting to dashboard...");
+                toast.success(t("Logged in successfully"), { id: toastId });
                 router.push("/dashboard");
             } else {
                 const errorMsg = await response.text();
-                Swal.fire({ text: errorMsg || "Invalid credentials", icon: "error" });
+                toast.error(errorMsg || t("wrong username or password"), { id: toastId });
             }
         } catch (error) {
             console.error("Connection error:", error);
-            Swal.fire({ text: "Backend server is not running or connection refused!", icon: "error" });
+            toast.error(t("Connection error occurred."), { id: toastId });
         }
     };
 
@@ -100,8 +91,8 @@ const LogInPage = () => {
             <LogInStructure />
             <div className="whiteBoxLogin">
                 <div>
-                    <p className="subTitle">Welcome back</p>
-                    <p className="underSubtitle">Enter your credentials to access your account</p>
+                    <p className="subTitle">{t("Welcome back")}</p>
+                    <p className="underSubtitle">{t("Enter your credentials to access your account")}</p>
                 </div>
                 
                 {showErrors && (
@@ -117,7 +108,7 @@ const LogInPage = () => {
                         <LogInInputs 
                             onValueChange={handleDataChange} 
                             ref={userNameRef} 
-                            label="User Name" 
+                            label={t("User Name")} 
                             iconSrc="/icons/mailicon.png" 
                             iconName="mail icon" 
                             inputType="text" 
@@ -127,26 +118,26 @@ const LogInPage = () => {
                         <LogInInputs 
                             onValueChange={handleDataChange} 
                             ref={passwordRef} 
-                            label="Password" 
+                            label={t("Password")} 
                             iconSrc="/icons/lockicon.png" 
                             iconName="lock icon" 
                             inputType="password" 
                             inputName="password" 
-                            placeholder="Enter your password" 
+                            placeholder={t("Enter your password")} 
                         />
                     </div>
                     
                     <div>
                         <p className="forgotPassword">
-                            <Link href="/changepasswordpage" className="forgotPassword">Forgot Password?</Link>
+                            <Link href="/changepasswordpage" className="forgotPassword">{t("Forgot Password?")}</Link>
                         </p>
                     </div>
                     
-                    <Button iconSrc="/icons/signInIcon.png" iconName="sign in icon" buttonType="submit" buttonDesc="Sign In" />
+                    <Button iconSrc="/icons/signInIcon.png" iconName="sign in icon" buttonType="submit" buttonDesc={t("Sign In")} />
                 </form>
                 
                 <hr className="hr"/>
-                <HaveAccount leftSide="Don't have an account?" rightSide="Sign up" To="/signuppage" />
+                <HaveAccount leftSide={t("Don't have an account?")} rightSide={t("Sign up")} To="/signuppage" />
             </div>
         </div>
     );

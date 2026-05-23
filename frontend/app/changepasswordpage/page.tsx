@@ -2,24 +2,25 @@
 import BackArrow from "../components/BackArrow";
 import "./page.css";
 import LogInInputs from "../components/LogInInputs";
-import { useState, useRef } from "react";
+import { useState, useRef, useContext } from "react";
+import UserContext from "../components/UserContext";
+import { LanguageContext } from "../components/LanguageContext";
 import { useRouter } from "next/navigation";
-import Swal from "sweetalert2";
+import { toast } from "sonner";
 const ChangePasswordPage = () => {
     const router = useRouter();
-    const userNameRef = useRef<HTMLInputElement>(null);
     const oldPasswordRef = useRef<HTMLInputElement>(null);
     const newPasswordRef = useRef<HTMLInputElement>(null);
     const confirmPasswordRef = useRef<HTMLInputElement>(null);
+    const { userName } = useContext(UserContext);
+    const { t } = useContext(LanguageContext);
     const [ChangePasswordInfo, setChangePasswordInfo] = useState({
-        userName: "",
         oldPassword: "",
         newPassword: "",
         confirmPassword: "",
     });
     const handleDataChange = () => {
         setChangePasswordInfo({
-          userName: userNameRef.current ? userNameRef.current.value : "",
           oldPassword: oldPasswordRef.current ? oldPasswordRef.current.value : "",
           newPassword: newPasswordRef.current ? newPasswordRef.current.value : "",
           confirmPassword: confirmPasswordRef.current ? confirmPasswordRef.current.value : "",
@@ -27,26 +28,24 @@ const ChangePasswordPage = () => {
     };
     const handleChangePassword = async () => {
         if (ChangePasswordInfo.oldPassword === "" || ChangePasswordInfo.newPassword === "" || ChangePasswordInfo.confirmPassword === "") {
-            Swal.fire({ text: "All fields are required.", icon: "warning" });
+            toast.warning(t("All fields are required."));
             return;
         }else if (ChangePasswordInfo.newPassword !== ChangePasswordInfo.confirmPassword) {
-            Swal.fire({ text: "New password and confirm password do not match.", icon: "warning" });
+            toast.warning(t("Passwords do not match"));
             return;
         }else if (!/[A-Z]/.test(ChangePasswordInfo.newPassword)) {
-            Swal.fire({ text: "New password must contain at least one uppercase letter.", icon: "warning" });
+            toast.warning(t("New password must contain at least one uppercase letter."));
             return;
         }else if (ChangePasswordInfo.newPassword.length < 8) {
-            Swal.fire({ text: "New password must be at least 8 characters long.", icon: "warning" });
+            toast.warning(t("New password must be at least 8 characters long."));
             return;
         }else if (!/[0-9]/.test(ChangePasswordInfo.newPassword)) {
-            Swal.fire({ text: "New password must contain at least one number.", icon: "warning" });
-            return;
-        }else if (!/[!@#$%^&*]/.test(ChangePasswordInfo.newPassword)) {
-            Swal.fire({ text: "New password must contain at least one special character (!@#$%^&*).", icon: "warning" });
+            toast.warning(t("New password must contain at least one number."));
             return;
         }else{
+        const toastId = toast.loading(t("Changing password..."));
         try {
-            const url = `http://localhost:8080/jamrik/changePassword/${encodeURIComponent(ChangePasswordInfo.userName)}`;
+            const url = `http://localhost:8080/jamrik/changePassword/${encodeURIComponent(userName)}`;
             const response = await fetch(url, {
                 method: "PUT",
                 credentials: "include",
@@ -54,7 +53,7 @@ const ChangePasswordPage = () => {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    userName: ChangePasswordInfo.userName,
+                    userName: userName,
                     currentPassword: ChangePasswordInfo.oldPassword,
                     newPassword: ChangePasswordInfo.newPassword,
                 }),
@@ -62,25 +61,24 @@ const ChangePasswordPage = () => {
             if (!response.ok) {
                 throw new Error("Failed to change password");
             }
-            Swal.fire({ text: "Password changed successfully.", icon: "success" }).then(() => {
-                router.push("/dashboard");
-            });
+            toast.success(t("Password changed successfully!"), { id: toastId });
+            router.push("/dashboard");
         } catch (error) {
             console.error("Error changing password:", error);
-            Swal.fire({ text: "Failed to change password.", icon: "error" });
+            toast.error(t("Could not change password"), { id: toastId });
         }
     }
 };
     return (
         <div className="ChangePasswordPage">
         <div className="whiteBoxChangePassword">
-            <BackArrow to="/dashboard"/>
-            <h1 className="subTitle">Change Password</h1>
-            <LogInInputs onValueChange={handleDataChange} ref={userNameRef} label="User Name" iconSrc="/icons/usericon.png" iconName="user icon" inputType="text" inputName="userName" placeholder="Enter user name" />
-            <LogInInputs onValueChange={handleDataChange} ref={oldPasswordRef} label="Old Password" iconSrc="/icons/lockicon.png" iconName="lock icon" inputType="password" inputName="oldPassword" placeholder="Enter old password" />
-            <LogInInputs onValueChange={handleDataChange} ref={newPasswordRef} label="New Password" iconSrc="/icons/lockicon.png" iconName="lock icon" inputType="password" inputName="newPassword" placeholder="Enter new password" />
-            <LogInInputs onValueChange={handleDataChange} ref={confirmPasswordRef} label="Confirm Password" iconSrc="/icons/lockicon.png" iconName="lock icon" inputType="password" inputName="confirmPassword" placeholder="Confirm new password" />
-            <button className="save-button" onClick={handleChangePassword}>Save Changes</button>
+            <BackArrow to="/profilepage"/>
+            <h1 className="subTitle" style={{display: 'flex', justifyContent: 'center'}}>{t("Change Your Password")}</h1>
+            <p style={{display: 'flex', justifyContent: 'center', margin: '10px 0px', fontSize: '18px', color: '#1C398E', fontWeight: 700}}>{userName}</p>
+            <LogInInputs onValueChange={handleDataChange} ref={oldPasswordRef} label={t("Old Password")} iconSrc="/icons/lockicon.png" iconName="lock icon" inputType="password" inputName="oldPassword" placeholder={t("Enter old password")} />
+            <LogInInputs onValueChange={handleDataChange} ref={newPasswordRef} label={t("New Password")} iconSrc="/icons/lockicon.png" iconName="lock icon" inputType="password" inputName="newPassword" placeholder={t("Enter new password")} />
+            <LogInInputs onValueChange={handleDataChange} ref={confirmPasswordRef} label={t("Confirm Password")} iconSrc="/icons/lockicon.png" iconName="lock icon" inputType="password" inputName="confirmPassword" placeholder={t("Confirm new password")} />
+            <button className="save-button" onClick={handleChangePassword}>{t("Save Changes")}</button>
         </div>
         </div>
     );

@@ -8,7 +8,8 @@ import { useRouter } from "next/navigation";
 import "./page.css";
 import UserContext from "../components/UserContext";
 import LogInInputsErrorHandler from "../components/LogInInputsErrorHandler";
-import Swal from "sweetalert2";
+import { LanguageContext } from "../components/LanguageContext";
+import { toast } from "sonner";
 const SignUpPage = () => {
   const [signUpDataForm, setSignUpDataForm] = useState({
     fullName: "",
@@ -35,6 +36,7 @@ const SignUpPage = () => {
   const [noErrors, setNoErrors] = useState(false);
   const router = useRouter();
   const { setUserData, avatarUrl} = useContext(UserContext);
+  const { t } = useContext(LanguageContext);
 
   const noErrorsToggle = (valid: boolean) => {
       setNoErrors(valid);
@@ -46,8 +48,9 @@ const SignUpPage = () => {
     if (!noErrors) {
         return;
     }
+    const toastId = toast.loading(t("Creating account..."));
     try {
-        console.log("Submitting registration data to backend...");
+        toast.loading(t("Creating account..."), { id: toastId });
             const response = await fetch("http://localhost:8080/jamrik/register", {
                 method: "POST",
                 credentials: "include",
@@ -63,26 +66,25 @@ const SignUpPage = () => {
                     avatar:0,
                 }),
             });
-            console.log("Received response from backend:", response);
             if (response.ok) {
                 const data = await response.json();
                 setUserData({
                     userName: data.userName,
-                    id: data.userName,
+                    id: String(data.id || ""),
+                    role: data.role || "",
                     email: data.email,
                     avatarUrl: avatarUrl,
                 });
-                console.log("User context set:", { userName: data.userName, id: data.id, email: data.email, avatarUrl: avatarUrl });
+                toast.success(t("Account created successfully!"), { id: toastId });
                 router.push("/dashboard");
             } else {
                 console.error("Registration failed with status:", response.status);
                 const errorText = await response.text();
-                Swal.fire({ text: "Registration failed: " + errorText, icon: "error" });
+                toast.error(t("Registration failed") + ": " + errorText, { id: toastId });
             }
         } catch (error) {
             console.error("Network error during registration:", error);
-            console.error("Network error:", error);
-            Swal.fire({ text: "Cannot connect to the server.", icon: "error" });
+            toast.error(t("Cannot connect to the server."), { id: toastId });
         }
 };
     return (
@@ -90,8 +92,8 @@ const SignUpPage = () => {
             <LogInStructure />
                 <div className="whiteBoxSignup">
                 <div>
-                <p className="subTitle">Create an account</p>
-                <p className="underSubtitle">Enter your information to set up your logistics account</p>
+                <p className="subTitle">{t("Create an account")}</p>
+                <p className="underSubtitle">{t("Enter your information to set up your logistics account")}</p>
               </div>
               
               {showErrors && (
@@ -107,33 +109,33 @@ const SignUpPage = () => {
               <form onSubmit={handleSubmit} noValidate>
 
               <div className="SignUpPageInputsContainer">
-              <LogInInputs onValueChange={handleDataChange} ref={fullNameRef} label="User Name" iconSrc="/icons/usericon.png" iconName="user icon" inputType="text" inputName="userName" placeholder="Mohammed Ahmad" />
-              <LogInInputs onValueChange={handleDataChange} ref={emailRef} label="Email" iconSrc="/icons/mailicon.png" iconName="mail icon" inputType="email" inputName="email" placeholder="Mohammed Ahmad@gmail.com" />
-              <LogInInputs onValueChange={handleDataChange} ref={passwordRef} label="Password" iconSrc="/icons/lockicon.png" iconName="lock icon" inputType="password" inputName="password" placeholder="Enter your password" />
-              <LogInInputs onValueChange={handleDataChange} ref={confirmPasswordRef} label="Confirm Password" iconSrc="/icons/lockicon.png" iconName="lock icon" inputType="password" inputName="confirmPassword" placeholder="Confirm your password" />
+              <LogInInputs onValueChange={handleDataChange} ref={fullNameRef} label={t("User Name")} iconSrc="/icons/usericon.png" iconName="user icon" inputType="text" inputName="userName" placeholder="Mohammed Ahmad" />
+              <LogInInputs onValueChange={handleDataChange} ref={emailRef} label={t("Email")} iconSrc="/icons/mailicon.png" iconName="mail icon" inputType="email" inputName="email" placeholder="Mohammed Ahmad@gmail.com" />
+              <LogInInputs onValueChange={handleDataChange} ref={passwordRef} label={t("Password")} iconSrc="/icons/lockicon.png" iconName="lock icon" inputType="password" inputName="password" placeholder={t("Enter your password")} />
+              <LogInInputs onValueChange={handleDataChange} ref={confirmPasswordRef} label={t("Confirm Password")} iconSrc="/icons/lockicon.png" iconName="lock icon" inputType="password" inputName="confirmPassword" placeholder={t("Confirm new password")} />
               </div>
 
               <div className="selectContainer">
-                <label className="inputLabel">User Role</label>
+                <label className="inputLabel">{t("User Role")}</label>
                 <select className="selectField"
                  name="userRole" 
                   value={signUpDataForm.userRole}
                   onChange={(e) => setSignUpDataForm({...signUpDataForm, userRole: e.target.value})}
                   style={{ color: signUpDataForm.userRole === "" ? "#A9A9A9" : "#000000" }}
                         >
-                  <option value="" disabled>Select Role</option>
-                    <option value="Procurement Officer">Procurement Officer</option>
-                    <option value="Logistics Officer">Logistics Officer</option>
-                    <option value="Customs Broker">Customs Broker</option>
+                  <option value="" disabled>{t("Select Role")}</option>
+                    <option value="Procurement Officer">{t("Procurement Officer")}</option>
+                    <option value="Logistics Officer">{t("Logistics Officer")}</option>
+                    <option value="Customs Broker">{t("Customs Broker")}</option>
                 </select>
 
               </div>
               
-              <Button iconSrc="/icons/createAccountIcon.png" iconName="sign up icon" buttonType="submit" buttonDesc="Create Account" /> 
+              <Button iconSrc="/icons/createAccountIcon.png" iconName="sign up icon" buttonType="submit" buttonDesc={t("Create Account")} /> 
               </form>
 
               <hr className="hr"/>
-              <HaveAccount leftSide="Already have an account?" rightSide="Sign in" To="/loginpage" />
+              <HaveAccount leftSide={t("Already have an account?")} rightSide={t("Sign in")} To="/loginpage" />
               </div>
         </div>
     );

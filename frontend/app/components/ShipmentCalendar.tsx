@@ -1,11 +1,15 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
+import arLocale from '@fullcalendar/core/locales/ar';
+import enLocale from '@fullcalendar/core/locales/en-gb'; // Or just use default for English
+import { LanguageContext } from './LanguageContext';
 import "./ShipmentCalendar.css";
 
 const ShipmentCalendar = () => {
+  const { language, t } = useContext(LanguageContext);
   const [events, setEvents] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
@@ -53,9 +57,20 @@ const ShipmentCalendar = () => {
         start: newNote.start,
         end: newNote.end,
         description: newNote.description,
-        color: "#000000"
+        color: "#2B4B8A"
       };
       setEvents([...events, eventToAdd]);
+      setIsModalOpen(false);
+    }
+  };
+
+  const handleUpdateNote = () => {
+    if (selectedEventId && newNote.title) {
+      setEvents(events.map(event => 
+        event.id === selectedEventId 
+          ? { ...event, title: newNote.title, description: newNote.description, start: newNote.start, end: newNote.end }
+          : event
+      ));
       setIsModalOpen(false);
     }
   };
@@ -73,36 +88,41 @@ const ShipmentCalendar = () => {
         plugins={[dayGridPlugin, interactionPlugin]}
         initialView="dayGridMonth"
         events={events}
+        eventColor="#609DEB"
         dateClick={handleDateClick}
         eventClick={handleEventClick} // Hook up the click listener
+        locale={language === 'ar' ? arLocale : undefined}
       />
 
       {isModalOpen && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <h3>{selectedEventId ? "Manage Note" : "Add New Note"}</h3>
+            <h3>{selectedEventId ? t("Manage Note") : t("Add New Note")}</h3>
             
-            <label>Title</label>
-            <input type="text" value={newNote.title} readOnly={!!selectedEventId}
+            <label>{t("Title")}</label>
+            <input type="text" value={newNote.title}
               onChange={(e) => setNewNote({...newNote, title: e.target.value})} />
 
-            <label>Description</label>
-            <textarea value={newNote.description} readOnly={!!selectedEventId}
+            <label>{t("Description")}</label>
+            <textarea value={newNote.description}
               onChange={(e) => setNewNote({...newNote, description: e.target.value})} />
 
             <div className="date-row">
-              <div><label>From</label><input type="date" value={newNote.start} readOnly={!!selectedEventId} /></div>
-              <div><label>To</label><input type="date" value={newNote.end} readOnly={!!selectedEventId} /></div>
+              <div><label>{t("From")}</label><input type="date" value={newNote.start} onChange={(e) => setNewNote({...newNote, start: e.target.value})} /></div>
+              <div><label>{t("To")}</label><input type="date" value={newNote.end} onChange={(e) => setNewNote({...newNote, end: e.target.value})} /></div>
             </div>
 
             <div className="modal-buttons">
-              <button className="btn-cancel" onClick={() => setIsModalOpen(false)}>Close</button>
+              <button className="btn-cancel" onClick={() => setIsModalOpen(false)}>{t("Close")}</button>
               
-              {/* Show DELETE if editing, show SAVE if creating */}
+              {/* Show DELETE and UPDATE if editing, show SAVE if creating */}
               {selectedEventId ? (
-                <button className="btn-delete" onClick={handleDeleteNote}>Remove Note</button>
+                <>
+                  <button className="btn-delete" onClick={handleDeleteNote} style={{marginRight: "8px"}}>{t("Remove Note")}</button>
+                  <button className="btn-save" onClick={handleUpdateNote}>{t("Update Note")}</button>
+                </>
               ) : (
-                <button className="btn-save" onClick={handleSaveNote}>Save Note</button>
+                <button className="btn-save" onClick={handleSaveNote}>{t("Save Note")}</button>
               )}
             </div>
           </div>

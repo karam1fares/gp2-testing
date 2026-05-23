@@ -6,12 +6,12 @@ type AvatarSelectorProps = {
   avatarClickedToggle: () => void;
 };
 const AvatarSelector = ({ avatarClickedToggle }: AvatarSelectorProps) => {
-  const { userName, id, avatarUrl, email, setUserData } = useContext(UserContext);
+  const { userName, id, role, avatarUrl, email, setUserData } = useContext(UserContext);
 
   const totalAvatars = 12;
 
   const handleSelect = (avatarIndex: number) => {
-    setUserData({ userName:userName, id:id, avatarUrl: String(avatarIndex),email:email });
+    setUserData({ userName:userName, id:id, role:role, avatarUrl: String(avatarIndex),email:email });
     avatarClickedToggle();
   };
 

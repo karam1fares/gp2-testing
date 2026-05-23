@@ -6,7 +6,7 @@
             box-sizing: border-box;
             padding : 20px 20px;
             margin: 13px;
-            text-align: left;
+            text-align: start;
             width: 580px;
         }
         .subTitle {

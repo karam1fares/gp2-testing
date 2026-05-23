@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useState, useRef, useContext } from "react";   
 import Button from "../components/Button";
 import { LanguageContext } from "../components/LanguageContext";
-import Swal from "sweetalert2";
+import { toast } from "sonner";
 
 const HsCodeAssistant = () => {
     const { t } = useContext(LanguageContext);
@@ -26,7 +26,9 @@ const HsCodeAssistant = () => {
     setHsCodeData({ productName, productDescription });
 
     if (productName !== "" && productDescription !== "") {
+        const toastId = toast.loading(t("Finding HS Code..."));
         try {
+            toast.loading(t("Finding HS Code..."), { id: toastId });
             const url = `http://localhost:8080/jamrik/codes/hs?productName=${encodeURIComponent(productName)}&description=${encodeURIComponent(productDescription)}`;
             
             const response = await fetch(url, {
@@ -41,15 +43,16 @@ const HsCodeAssistant = () => {
                 const hsCode = await response.text();
                 setHsCodeResult(hsCode);
                 setHsCodeResultSection("block");
+                toast.success(t("HS Code generated successfully!"), { id: toastId });
             } else {
                 console.error("Failed to fetch HS Code");
-                Swal.fire({ text: t("Could not generate HS code. Please check backend."), icon: "error" });
+                toast.error(t("Could not generate HS code."), { id: toastId });
             }
         } catch (error) {
             console.error("Connection error:", error);
-            Swal.fire({ text: t("AI Service is currently unreachable."), icon: "error" });
+            toast.error(t("AI Service is currently unreachable."), { id: toastId });
         }
-    }else Swal.fire({ text: t("Please fill in both product name and description."), icon: "warning" });
+    }else toast.warning(t("Please fill in both product name and description."));
 };
     return (
        <MainStructure>

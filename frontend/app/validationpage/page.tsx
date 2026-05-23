@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, useContext } from "react";
 import Image from "next/image";
 import { LanguageContext } from "../components/LanguageContext";
 import "./page.css";
-import Swal from "sweetalert2";
+import { toast } from "sonner";
 
 const ValidationPage = () => {
     const { t } = useContext(LanguageContext);
@@ -72,7 +72,7 @@ const ValidationPage = () => {
 const handleValidate = async () => {
         // 1. Validation Check
         if (filesData[0].file === null || filesData[1].file === null || filesData[0].docType === "" || filesData[1].docType === "") {
-            Swal.fire({ text: t("Please upload both documents and select their types."), icon: "warning" });
+            toast.warning(t("Please upload both documents and select their types."));
             return;
         }
 
@@ -80,14 +80,7 @@ const handleValidate = async () => {
         setDisplayAiResult(false);
         setAiValidationResult("");
         
-        Swal.fire({
-            title: t("Processing Manifests"),
-            text: t("AI is extracting text and validating consistency metrics..."),
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
+        const toastId = toast.loading(t("AI is extracting text and validating consistency metrics..."));
 
         // 3. Assemble Multipart Payload
         const formData = new FormData();
@@ -115,25 +108,14 @@ const handleValidate = async () => {
             // HSCode validation returns plain text from the backend AI service
             const text = await response.text();
             
-            // Close the processing spinner
-            Swal.close();
-
             // 5. Update Local State UI
             setAiValidationResult(text);
             setDisplayAiResult(true);
 
-            Swal.fire({ 
-                text: t("Documents processed successfully! Review AI assessment below."), 
-                icon: "success" 
-            });
+            toast.success(t("Documents processed successfully! Review AI assessment below."), { id: toastId });
 
         } catch (error) {
-            Swal.close();
-            Swal.fire({
-                title: t("Validation Failed"),
-                text: error instanceof Error ? error.message : t("Could not communicate with the engine server."),
-                icon: "error"
-            });
+            toast.error(error instanceof Error ? error.message : t("Could not communicate with the engine server."), { id: toastId });
         }
     };
    

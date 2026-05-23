@@ -66,3 +66,12 @@
 .aiResultsContent{
     font-size: 14px;
 }
+.addDocumentButton {
+    color: #2B4B8A;
+    border: "none";
+    cursor: "pointer";
+    font-size: 16px;
+}
+.addDocumentButton:hover {
+    background-color: #16306B;
+}

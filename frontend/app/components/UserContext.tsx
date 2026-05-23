@@ -4,6 +4,7 @@ import { createContext, useState, useEffect, ReactNode } from "react";
 type UserData = {
   userName: string;
   id: string;
+  role: string;
   email: string;
   avatarUrl: string;
 };
@@ -11,6 +12,7 @@ type UserData = {
 type UserContextType = {
   userName: string;
   id: string;
+  role: string;
   avatarUrl: string; // 2. Added this to the context type
   email: string; // 2. Added this to the context type
   setUserData: (data: UserData) => void;
@@ -19,6 +21,7 @@ type UserContextType = {
 const UserContext = createContext<UserContextType>({
   userName: "Account Type",
   id: "Demo Account",
+  role: "",
   avatarUrl: "0", // 3. Added a default index (the first face)
   email: "", // 3. Added a default email
   setUserData: () => {},
@@ -28,6 +31,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [userData, setUserDataState] = useState<UserData>({ 
     userName: "Account Type", 
     id: "Demo Account",
+    role: "",
     email: "",
     avatarUrl: "0",
   });
@@ -53,6 +57,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       value={{ 
         userName: userData.userName, 
         id: userData.id, 
+        role: userData.role,
         avatarUrl: userData.avatarUrl,
         email: userData.email,
         setUserData 

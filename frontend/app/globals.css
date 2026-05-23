@@ -1,7 +1,11 @@
-*{
+* {
+   box-sizing: border-box;
    padding: 0px;
-  margin: 0px;
-  font-family: 'inter';
+   margin: 0px;
+   font-family: 'inter';
+}
+*::before, *::after {
+   box-sizing: border-box;
 }
 /* Hide the default eye icon in Microsoft Edge */
 input::-ms-reveal {

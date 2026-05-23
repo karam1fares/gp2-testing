@@ -39,6 +39,7 @@ user.setPassword(hash.encode(rdto.password()));
      User savedUser= jamrikRepo.save(user);
      //using a dto to ensure hashed password isn't returned to frontend
      return new UserResponseDTO(
+             savedUser.getId(),
              savedUser.getUserName(),
              savedUser.getEmail(),
              savedUser.getRole(),
@@ -71,6 +72,7 @@ user.setPassword(hash.encode(rdto.password()));
         //save the new user data in the db
           User updatedUser=jamrikRepo.save(user);
           return new UserResponseDTO(
+                  updatedUser.getId(),
                   updatedUser.getUserName(),
                   updatedUser.getEmail(),
                   updatedUser.getRole(),
