@@ -28,19 +28,19 @@ const ChangePasswordPage = () => {
     };
     const handleChangePassword = async () => {
         if (ChangePasswordInfo.oldPassword === "" || ChangePasswordInfo.newPassword === "" || ChangePasswordInfo.confirmPassword === "") {
-            toast.warning(t("All fields are required."));
+            toast.error(t("All fields are required."));
             return;
         }else if (ChangePasswordInfo.newPassword !== ChangePasswordInfo.confirmPassword) {
-            toast.warning(t("Passwords do not match"));
+            toast.error(t("Passwords do not match"));
             return;
         }else if (!/[A-Z]/.test(ChangePasswordInfo.newPassword)) {
-            toast.warning(t("New password must contain at least one uppercase letter."));
+            toast.error(t("New password must contain at least one uppercase letter."));
             return;
         }else if (ChangePasswordInfo.newPassword.length < 8) {
-            toast.warning(t("New password must be at least 8 characters long."));
+            toast.error(t("New password must be at least 8 characters long."));
             return;
         }else if (!/[0-9]/.test(ChangePasswordInfo.newPassword)) {
-            toast.warning(t("New password must contain at least one number."));
+            toast.error(t("New password must contain at least one number."));
             return;
         }else{
         const toastId = toast.loading(t("Changing password..."));

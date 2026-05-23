@@ -52,7 +52,7 @@ const HsCodeAssistant = () => {
             console.error("Connection error:", error);
             toast.error(t("AI Service is currently unreachable."), { id: toastId });
         }
-    }else toast.warning(t("Please fill in both product name and description."));
+    }else toast.error(t("Please fill in both product name and description."));
 };
     return (
        <MainStructure>

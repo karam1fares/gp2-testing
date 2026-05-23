@@ -38,14 +38,14 @@ const NewShipment = () => {
       const selectedFile = files[0];
 
       if (selectedFile.size > 10 * 1024 * 1024) {
-          toast.warning(t("Please upload a file smaller than 10MB"));
+          toast.error(t("Please upload a file smaller than 10MB"));
           e.target.value = "";
           return;
       }
       
       const fileName = selectedFile.name.toLowerCase();
       if (!fileName.endsWith(".pdf") && !fileName.endsWith(".doc") && !fileName.endsWith(".docx")) {
-          toast.warning(t("Please upload PDF or Word files only"));
+          toast.error(t("Please upload PDF or Word files only"));
           e.target.value = "";
           return;
       }
@@ -94,7 +94,7 @@ const handleSubmit1 = async (e: React.FormEvent) => {
     e.preventDefault();
     const totalFiles = Object.values(allDocuments).flat().length;
     if (totalFiles === 0) {
-        toast.warning(t("Please upload at least one document before creating the shipment."));
+        toast.error(t("Please upload at least one document before creating the shipment."));
         return;
     }else{setCreateShipmentPressed(!createShipmentPressed);}
        
@@ -103,7 +103,7 @@ const handleSubmit2 = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!shipmentData.shipmentName || !shipmentData.shipmentReferenceNumber || !shipmentData.shipmentStatus) {
-        toast.warning(t("Please fill in all shipment details before submitting."));
+        toast.error(t("Please fill in all shipment details before submitting."));
         return;
     }
 
@@ -123,7 +123,7 @@ const handleSubmit2 = async (e: React.FormEvent) => {
         });
 
         if (response.redirected) {
-             toast.warning(t("Session expired. Please log in again."), { id: toastId });
+             toast.error(t("Session expired. Please log in again."), { id: toastId });
              router.push("/loginpage");
              return;
         }
@@ -137,7 +137,7 @@ const handleSubmit2 = async (e: React.FormEvent) => {
               toast.success(t("Shipment created successfully!"), { id: toastId });
               router.push("/shipments");
             } else {
-              toast.warning(t("Shipment created, but documents failed to upload."), { id: toastId });
+              toast.error(t("Shipment created, but documents failed to upload."), { id: toastId });
               router.push("/shipments");
             }
         } else {
@@ -255,7 +255,8 @@ const handleFileUploadsForCreatingShipment = async (documents: UploadedDocs, shi
      {t("Create Shipment")}
       </button>
 
-      <div className="createShipmentPopUp" style={{display:`${createShipmentPressed ? "flex" : "none"}`}}>
+      <div className="createShipmentPopUpOverlay" style={{display: createShipmentPressed ? "flex" : "none"}}>
+      <div className="createShipmentPopUp" style={{display:"flex"}}>
         <div>
         <LogInInputs onValueChange={handleDataChange} ref={shipmentNameRef} label={t("Shipment Name")} iconSrc="/icons/mailicon.png" iconName="mail icon" inputType="text" inputName="shipmentName" placeholder={t("Example Shipment")} />
         <LogInInputs onValueChange={handleDataChange} ref={shipmentReferenceNumberRef} label={t("Shipment Reference Number")} iconSrc="/icons/mailicon.png" iconName="mail icon" inputType="text" inputName="shipmentReferenceNumber" placeholder="ORGD9678383" />
@@ -286,14 +287,15 @@ const handleFileUploadsForCreatingShipment = async (documents: UploadedDocs, shi
      {t("Create Shipment")}
       </button>
       </div>
+      </div>
+      </div>
 
       </div>
 
 
    
-     </div>
-        </div>
-        </MainStructure>
+         </div>
+         </MainStructure>
     );
 }
 export default NewShipment;

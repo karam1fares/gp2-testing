@@ -6,8 +6,13 @@ type ShipmentsCardProps = {
     handleDeleteShipment:(id: string) => void;
     isSelected?: boolean;
     handleClick: (id: string) => void;
+    handleStatusUpdate?: (id: string, newStatus: string) => void;
 }
-const ShipmentsCard = ({shipmentName, referenceNumber,status, handleDeleteShipment,isSelected,handleClick }: ShipmentsCardProps & { handleClick: (id: string) => void }) => {
+import { toast } from "sonner";
+import { useContext } from "react";
+import { LanguageContext } from "./LanguageContext";
+const ShipmentsCard = ({shipmentName, referenceNumber,status, handleDeleteShipment,isSelected,handleClick, handleStatusUpdate }: ShipmentsCardProps & { handleClick: (id: string) => void }) => {
+    const { t } = useContext(LanguageContext);
     const handleStatusChange = async (newStatus: string) => {
     try {
         const url = `http://localhost:8080/jamrik/shipments/changeStatus/${encodeURIComponent(referenceNumber)}?status=${encodeURIComponent(newStatus)}`;
@@ -19,12 +24,16 @@ const ShipmentsCard = ({shipmentName, referenceNumber,status, handleDeleteShipme
 
         if (response.ok) {
             const updatedShipment = await response.json();
-            alert(`Status updated to ${newStatus}`);
+            toast.success(`${t("Status updated to ")} ${t(newStatus)}`);
+            if (handleStatusUpdate) {
+                handleStatusUpdate(referenceNumber, newStatus);
+            }
         } else {
-            alert("Failed to update status.");
+            toast.error(t("Failed to update status."));
         }
     } catch (error) {
         console.error("Error updating status:", error);
+        toast.error(t("Failed to update status."));
     }
 };
     return (
@@ -40,13 +49,13 @@ const ShipmentsCard = ({shipmentName, referenceNumber,status, handleDeleteShipme
                                     handleStatusChange("In Progress");
                                 }
                                 }}>
-                            Status: {status}
+                            {t("Status: ")} {t(status || "")}
                         </div>
                         <button className="shipmentCardStatus" onClick={(e) => {
                             e.stopPropagation();
                             handleDeleteShipment(referenceNumber || "");
                         }} style={{backgroundColor: "transparent", border: "none", color: "red", cursor: "pointer"}}>
-                            Delete Shipment
+                            {t("Delete Shipment")}
                         </button>
                     </div>
                 )}

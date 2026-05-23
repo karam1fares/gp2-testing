@@ -25,9 +25,16 @@ const Shipments = () => {
                 
                 if (response.ok) {
                     const data = await response.json();
-                    setAllShipments(data);
                     if (data && data.length > 0) {
+                        setAllShipments(data);
                         setClickedShipmentData(data[0]);
+                    } else {
+                        setAllShipments([]);
+                        setClickedShipmentData({
+                            shipmentName: "Create Shipment",
+                            referenceNumber: "shipment reference number",
+                            status: "Shipment Status",
+                        });
                     }
                 } else {
                     console.error("Failed to fetch shipments");
@@ -53,8 +60,29 @@ const Shipments = () => {
             setClickedShipmentData(clickedShipment);
         }
     };
-    const handleDeleteShipment = async (referenceNumber: string) => {
-    if (window.confirm(t("Are you sure you want to delete this shipment?"))) {
+    const [deleteShipmentModalOpen, setDeleteShipmentModalOpen] = useState(false);
+    const [shipmentToDelete, setShipmentToDelete] = useState<string | null>(null);
+
+    const confirmDeleteShipment = (referenceNumber: string) => {
+        if (referenceNumber === "shipment reference number") {
+            toast.error(t("Cannot delete the default placeholder shipment."));
+            return;
+        }
+        setShipmentToDelete(referenceNumber);
+        setDeleteShipmentModalOpen(true);
+    };
+
+    const handleStatusUpdate = (referenceNumber: string, newStatus: string) => {
+        setAllShipments(prev => prev.map(s => s.referenceNumber === referenceNumber ? { ...s, status: newStatus } : s));
+        setClickedShipmentData(prev => prev.referenceNumber === referenceNumber ? { ...prev, status: newStatus } : prev);
+    };
+
+    const handleDeleteShipment = async () => {
+        if (!shipmentToDelete) return;
+        const referenceNumber = shipmentToDelete;
+        setDeleteShipmentModalOpen(false);
+        setShipmentToDelete(null);
+
         const toastId = toast.loading(t("Deleting shipment..."));
         try {
             const url = `http://localhost:8080/jamrik/shipments/deleteShipment?referenceNumber=${referenceNumber}`;
@@ -65,7 +93,24 @@ const Shipments = () => {
             });
 
             if (response.ok) {
-                setAllShipments(prev => prev.filter(s => s.referenceNumber !== referenceNumber));
+                setAllShipments(prev => {
+                    const newShipments = prev.filter(s => s.referenceNumber !== referenceNumber);
+                    setClickedShipmentData(current => {
+                        if (current.referenceNumber === referenceNumber) {
+                            if (newShipments.length > 0) {
+                                return newShipments[0];
+                            } else {
+                                return {
+                                    shipmentName: "Create Shipment",
+                                    referenceNumber: "shipment reference number",
+                                    status: "Shipment Status",
+                                };
+                            }
+                        }
+                        return current;
+                    });
+                    return newShipments;
+                });
                 toast.success(t("Shipment deleted successfully."), { id: toastId });
             } else {
                 const error = await response.text();
@@ -75,8 +120,7 @@ const Shipments = () => {
             console.error("Connection error:", error);
             toast.error(t("Could not connect to the server."), { id: toastId });
         }
-    }
-};
+    };
     const [allDocuments, setAllDocuments] = useState<any[]>([]);
 
     const fetchDocuments = async () => {
@@ -137,16 +181,16 @@ useEffect(() => {
 
     const handleCustomUpload = async () => {
         if (!uploadFileName || !uploadFileType || !uploadFile) {
-            toast.warning(t("Please fill in all fields and select a file"));
+            toast.error(t("Please fill in all fields and select a file"));
             return;
         }
         if (uploadFile.size > 10 * 1024 * 1024) {
-            toast.warning(t("Please upload a file smaller than 10MB"));
+            toast.error(t("Please upload a file smaller than 10MB"));
             return;
         }
         const fileName = uploadFile.name.toLowerCase();
         if (!fileName.endsWith(".pdf") && !fileName.endsWith(".doc") && !fileName.endsWith(".docx")) {
-            toast.warning(t("Please upload PDF or Word files only"));
+            toast.error(t("Please upload PDF or Word files only"));
             return;
         }
 
@@ -174,24 +218,31 @@ useEffect(() => {
             toast.error(`${t("Upload failed")}: ${error instanceof Error ? error.message : error}`, { id: toastId });
         }
     };
-const [aiResultContent, setAiResultContent] = useState(t("AI analysis results will appear here after you analyze the documents."));
+const [aiResultContent, setAiResultContent] = useState<string | null>(null);
+
+// Customs Declaration Form states
+const [isGeneratingCustoms, setIsGeneratingCustoms] = useState(false);
+const [customsPdfUrl, setCustomsPdfUrl] = useState<string | null>(null);
+const [showCustomsModal, setShowCustomsModal] = useState(false);
+const [customsPdfBlob, setCustomsPdfBlob] = useState<Blob | null>(null);
+
 const handleAnalyzeDocuments = async () => {
     // 1. Safety Guard: Check if a valid shipment is actively selected
     if (!clickedShipmentData?.referenceNumber || clickedShipmentData.referenceNumber === "shipment reference number") {
-        toast.warning(t("Please select a valid shipment from the tracking list first."));
+        toast.error(t("Please select a valid shipment from the tracking list first."));
         return;
     }
 
     // 2. Safety Guard: Check if the shipment actually has documents attached to analyze
     if (allDocuments.length === 0) {
-        toast.warning(t("This shipment has no uploaded documents to analyze. Please add documents first."));
+        toast.error(t("This shipment has no uploaded documents to analyze. Please add documents first."));
         return;
     }
 
     // 3. Update UI to a processing state and open the loading blocker overlay
     setAiResultContent(t("Analyzing documents... Please wait."));
     
-    const toastId = toast.loading(t("Running cross-document consistency checks and HS code validation..."));
+    const toastId = toast.loading(t("Analyzing documents... This may take a moment."));
 
     try {
         // 4. Construct URL targeted directly at your shipment's reference ID
@@ -223,6 +274,78 @@ const handleAnalyzeDocuments = async () => {
         toast.error(fallbackErrorMessage, { id: toastId });
     }
 };
+
+// Generate Customs Declaration Form handler
+const handleGenerateCustomsDeclaration = async () => {
+    // Safety Guard: Check if a valid shipment is actively selected
+    if (!clickedShipmentData?.referenceNumber || clickedShipmentData.referenceNumber === "shipment reference number") {
+        toast.error(t("Please select a valid shipment from the tracking list first."));
+        return;
+    }
+
+    // Safety Guard: Check if the shipment has documents
+    if (allDocuments.length === 0) {
+        toast.error(t("This shipment has no uploaded documents to analyze. Please add documents first."));
+        return;
+    }
+
+    setIsGeneratingCustoms(true);
+    const toastId = toast.loading(t("Generating customs declaration form..."));
+
+    try {
+        const url = `http://localhost:8080/jamrik/shipments/generateCustomsDeclaration?referenceNumber=${encodeURIComponent(clickedShipmentData.referenceNumber)}`;
+        const response = await fetch(url, {
+            method: "POST",
+            credentials: "include",
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText || t("Failed to generate customs declaration form."));
+        }
+
+        const blob = await response.blob();
+        const pdfUrl = URL.createObjectURL(blob);
+
+        // Clean up previous URL if any
+        if (customsPdfUrl) {
+            URL.revokeObjectURL(customsPdfUrl);
+        }
+
+        setCustomsPdfBlob(blob);
+        setCustomsPdfUrl(pdfUrl);
+        setShowCustomsModal(true);
+        toast.success(t("Customs declaration form generated successfully!"), { id: toastId });
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : t("Failed to generate customs declaration form.");
+        toast.error(errorMessage, { id: toastId });
+    } finally {
+        setIsGeneratingCustoms(false);
+    }
+};
+
+// Download the generated PDF
+const handleDownloadCustomsPdf = () => {
+    if (customsPdfBlob) {
+        const url = URL.createObjectURL(customsPdfBlob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `customs_declaration_${clickedShipmentData.referenceNumber}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+};
+
+// Close the PDF modal
+const handleCloseCustomsModal = () => {
+    setShowCustomsModal(false);
+    if (customsPdfUrl) {
+        URL.revokeObjectURL(customsPdfUrl);
+        setCustomsPdfUrl(null);
+    }
+};
     return (
         <MainStructure>
         <div className="ShipmentsContainer">
@@ -242,7 +365,8 @@ const handleAnalyzeDocuments = async () => {
                         referenceNumber={shipment.referenceNumber}
                         status={shipment.status}
                         handleClick={() => handleShipmentClick(shipment.referenceNumber)}
-                        handleDeleteShipment={() => handleDeleteShipment(shipment.referenceNumber)}
+                        handleDeleteShipment={() => confirmDeleteShipment(shipment.referenceNumber)}
+                        handleStatusUpdate={handleStatusUpdate}
                     />
                 ))}
             </div>
@@ -253,7 +377,8 @@ const handleAnalyzeDocuments = async () => {
                     status={clickedShipmentData.status}
                     isSelected={true}
                     handleClick={() => {}}
-                    handleDeleteShipment={() => handleDeleteShipment(clickedShipmentData.referenceNumber)}
+                    handleDeleteShipment={() => confirmDeleteShipment(clickedShipmentData.referenceNumber)}
+                    handleStatusUpdate={handleStatusUpdate}
                 />
                 <div className="selectedShipmentUploadedDocumentsContainer">
                     <div style={{display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center"}}>
@@ -282,7 +407,7 @@ const handleAnalyzeDocuments = async () => {
                 <div className="AiResultsContainer">
                 <p className="aiResultsTitle">{t("AI Analysis Results")}</p>
                 <div className="aiResultsContent">
-                    {aiResultContent}
+                    {aiResultContent || t("AI analysis results will appear here after you analyze the documents.")}
                 </div>
                 </div>
 
@@ -290,7 +415,7 @@ const handleAnalyzeDocuments = async () => {
                 <button className="analyzeShipmentDocumentsButton" onClick={handleAnalyzeDocuments}>
                     {t("Analyze Documents")}
                 </button>
-                <button className="generateFormButton">{t("Generate Customs Declaration Form")}</button>
+                <button className="generateFormButton" onClick={handleGenerateCustomsDeclaration} disabled={isGeneratingCustoms}>{isGeneratingCustoms ? t("Generating customs declaration form...") : t("Generate Customs Declaration Form")}</button>
                 </div>
             </div>
         </div>
@@ -338,6 +463,57 @@ const handleAnalyzeDocuments = async () => {
                             style={{ padding: "10px 20px", backgroundColor: "#1C398E", color: "#fff", borderRadius: "5px", border: "none", cursor: "pointer", fontWeight: "bold" }}
                         >
                             {t("Upload")}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )}
+
+        {/* Customs Declaration PDF Viewer Modal */}
+        {showCustomsModal && customsPdfUrl && (
+            <div className="customsModalOverlay" onClick={handleCloseCustomsModal}>
+                <div className="customsModalContent" onClick={(e) => e.stopPropagation()}>
+                    <div className="customsModalHeader">
+                        <h2 className="customsModalTitle">{t("Generate Customs Declaration Form")}</h2>
+                        <button className="customsModalCloseBtn" onClick={handleCloseCustomsModal}>✕</button>
+                    </div>
+                    <div className="customsModalBody">
+                        <iframe
+                            src={customsPdfUrl}
+                            className="customsPdfIframe"
+                            title="Customs Declaration Form PDF"
+                        />
+                    </div>
+                    <div className="customsModalFooter">
+                        <button className="customsDownloadBtn" onClick={handleDownloadCustomsPdf}>
+                            ⬇️ {t("Download PDF")}
+                        </button>
+                        <button className="customsCloseFooterBtn" onClick={handleCloseCustomsModal}>
+                            {t("Close")}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {deleteShipmentModalOpen && (
+            <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000 }}>
+                <div style={{ backgroundColor: "#FFFFFF", padding: "24px", borderRadius: "10px", width: "400px", display: "flex", flexDirection: "column", gap: "16px", boxShadow: "0px 4px 6px rgba(0,0,0,0.1)" }}>
+                    <h2 style={{ fontSize: "20px", fontWeight: "600", color: "#d9534f", margin: 0 }}>{t("Delete Shipment")}</h2>
+                    <p style={{ color: "#463f3f", fontSize: "16px", margin: 0 }}>{t("Are you sure you want to delete this shipment? This action cannot be undone.")}</p>
+                    <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "10px" }}>
+                        <button 
+                            onClick={() => { setDeleteShipmentModalOpen(false); setShipmentToDelete(null); }}
+                            style={{ padding: "10px 20px", backgroundColor: "#ccc", color: "#333", borderRadius: "5px", border: "none", cursor: "pointer", fontWeight: "bold" }}
+                        >
+                            {t("Cancel")}
+                        </button>
+                        <button 
+                            onClick={handleDeleteShipment}
+                            style={{ padding: "10px 20px", backgroundColor: "#d9534f", color: "#fff", borderRadius: "5px", border: "none", cursor: "pointer", fontWeight: "bold" }}
+                        >
+                            {t("Delete")}
                         </button>
                     </div>
                 </div>

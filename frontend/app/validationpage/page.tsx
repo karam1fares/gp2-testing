@@ -72,7 +72,7 @@ const ValidationPage = () => {
 const handleValidate = async () => {
         // 1. Validation Check
         if (filesData[0].file === null || filesData[1].file === null || filesData[0].docType === "" || filesData[1].docType === "") {
-            toast.warning(t("Please upload both documents and select their types."));
+            toast.error(t("Please upload both documents and select their types."));
             return;
         }
 
@@ -80,7 +80,7 @@ const handleValidate = async () => {
         setDisplayAiResult(false);
         setAiValidationResult("");
         
-        const toastId = toast.loading(t("AI is extracting text and validating consistency metrics..."));
+        const toastId = toast.loading(t("AI is validating the documents..."));
 
         // 3. Assemble Multipart Payload
         const formData = new FormData();

@@ -76,17 +76,26 @@
     background-color: #4a7ac1;
 }
 
+.createShipmentPopUpOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
 .createShipmentPopUp{
     background-color: white;
     border: 1px solid #463f3f;
     border-radius: 10px;
     box-shadow: 0px 4px 6px #9F9F9F;
-    padding: 8px;
+    padding: 24px;
+    display: flex;
     flex-direction: column;
-    height: 40%;
     width: 50%;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
 }

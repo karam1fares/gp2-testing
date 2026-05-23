@@ -77,8 +77,7 @@ const LogInPage = () => {
                 toast.success(t("Logged in successfully"), { id: toastId });
                 router.push("/dashboard");
             } else {
-                const errorMsg = await response.text();
-                toast.error(errorMsg || t("wrong username or password"), { id: toastId });
+              toast.error(t("wrong username or password"), { id: toastId });
             }
         } catch (error) {
             console.error("Connection error:", error);
