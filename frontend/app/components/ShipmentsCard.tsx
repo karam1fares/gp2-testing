@@ -11,7 +11,7 @@ type ShipmentsCardProps = {
 import { toast } from "sonner";
 import { useContext } from "react";
 import { LanguageContext } from "./LanguageContext";
-const ShipmentsCard = ({shipmentName, referenceNumber,status, handleDeleteShipment,isSelected,handleClick, handleStatusUpdate }: ShipmentsCardProps & { handleClick: (id: string) => void }) => {
+const ShipmentsCard = ({shipmentName, referenceNumber,status, handleDeleteShipment,isSelected,handleClick, handleStatusUpdate, isCompact }: ShipmentsCardProps & { handleClick: (id: string) => void }) => {
     const { t } = useContext(LanguageContext);
     const handleStatusChange = async (newStatus: string) => {
     try {
@@ -36,10 +36,14 @@ const ShipmentsCard = ({shipmentName, referenceNumber,status, handleDeleteShipme
         toast.error(t("Failed to update status."));
     }
 };
+
+    const displayShipmentName = isCompact && shipmentName && shipmentName.length > 14 ? shipmentName.substring(0, 14) + "..." : shipmentName;
+    const displayReferenceNumber = isCompact && referenceNumber && referenceNumber.length > 14 ? referenceNumber.substring(0, 14) + "..." : referenceNumber;
+
     return (
         <div className={`shipmentCardContainer ${isSelected ? 'selected' : ''}`} onClick={() => {handleClick(referenceNumber || "");}} style={{ cursor: isSelected ? "default" : "pointer" }}>
-            <p>{shipmentName}</p>
-                <p className="shipmentCardTitle">{referenceNumber}</p>
+            <p>{displayShipmentName}</p>
+                <p className="shipmentCardTitle">{displayReferenceNumber}</p>
                 {(isSelected) && (
                     <div style={{display: "flex", flexDirection: "row", justifyContent: "space-between" , marginTop: "3px"}}>
                         <div className="shipmentCardStatus" onClick={() => {

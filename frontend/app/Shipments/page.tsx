@@ -356,6 +356,7 @@ const handleCloseCustomsModal = () => {
                         handleClick={() => handleShipmentClick(shipment.referenceNumber)}
                         handleDeleteShipment={() => confirmDeleteShipment(shipment.referenceNumber)}
                         handleStatusUpdate={handleStatusUpdate}
+                        isCompact={true}
                     />
                 ))}
             </div>

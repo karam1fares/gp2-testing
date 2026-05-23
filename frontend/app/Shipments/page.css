@@ -78,6 +78,53 @@
     text-decoration: underline;
 }
 
+.uploadedFilesList {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.uploadedFileCard {
+    background-color: #FFFFFF;
+    border-radius: 12px;
+    border: 1px solid #D4D4D4;
+    padding: 2px 0px 2px 4px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    box-shadow: 0px 2px 4px rgba(0,0,0,0.05);
+}
+
+.fileNameText {
+    font-size: 14px;
+    color: #525252;
+}
+
+.uploadedFileCard span:nth-child(2) {
+    font-size: 14px;
+    color: #171717;
+    margin-top: 4px;
+}
+
+.removeFileBtn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 8px;
+    color: #525252;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.removeFileBtn:hover {
+    color: #d9534f;
+}
+
 /* Customs Declaration PDF Viewer Modal */
 .customsModalOverlay {
     position: fixed;
