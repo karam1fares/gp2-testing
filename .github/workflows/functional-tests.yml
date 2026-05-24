@@ -16,7 +16,7 @@ jobs:
         with:
           node-version: '20'
       - name: Install dependencies
-        run: cd frontend && npm ci
+        run: cd frontend && npm install
       - name: Run Unit Tests
         run: cd frontend && npm run test:unit
       - name: Run Integration Tests
@@ -38,4 +38,4 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
       - name: Run Maven Tests (Unit & Integration)
-        run: cd backend && ./mvnw test
+        run: cd backend && chmod +x mvnw && ./mvnw test
