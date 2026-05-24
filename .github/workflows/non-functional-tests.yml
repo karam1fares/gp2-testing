@@ -39,7 +39,7 @@ jobs:
       matrix:
         include:
           - language: java
-            build-mode: autobuild
+            build-mode: manual
           - language: javascript-typescript
             build-mode: none
 
@@ -52,6 +52,10 @@ jobs:
       with:
         languages: ${{ matrix.language }}
         build-mode: ${{ matrix.build-mode }}
+
+    - name: Build Java manually
+      if: matrix.language == 'java'
+      run: cd backend && chmod +x mvnw && ./mvnw clean package -DskipTests
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
