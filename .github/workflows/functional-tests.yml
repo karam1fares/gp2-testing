@@ -1,0 +1,41 @@
+name: Functional Tests
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  frontend-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: cd frontend && npm ci
+      - name: Run Unit Tests
+        run: cd frontend && npm run test:unit
+      - name: Run Integration Tests
+        run: cd frontend && npm run test:integration
+
+  backend-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+      - name: Run Maven Tests (Unit & Integration)
+        run: cd backend && ./mvnw test
