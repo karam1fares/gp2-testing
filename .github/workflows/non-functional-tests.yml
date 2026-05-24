@@ -53,6 +53,13 @@ jobs:
         languages: ${{ matrix.language }}
         build-mode: ${{ matrix.build-mode }}
 
+    - name: Setup Java
+      if: matrix.language == 'java'
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+
     - name: Build Java manually
       if: matrix.language == 'java'
       run: cd backend && chmod +x mvnw && ./mvnw clean package -DskipTests
